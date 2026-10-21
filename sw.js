@@ -1,7 +1,7 @@
 /* WA Professionnels Maroc · Service Worker
    Versión de caché única; solo se consulta la caché actual para no servir
    archivos antiguos. HTML network-first, estáticos cache-first. */
-const CACHE_VERSION = 'cw-v14';
+const CACHE_VERSION = 'cw-v15';
 const CACHE_NAME = 'wa-professionnels-maroc-' + CACHE_VERSION;
 
 const PRECACHE = [
@@ -14,9 +14,9 @@ const PRECACHE = [
   './assets/css/portfolio.css?v=1',
   './assets/js/portfolio.js?v=1',
   './manifest.webmanifest',
-  './assets/css/styles.css?v=12',
+  './assets/css/styles.css?v=13',
   './assets/css/landing.css?v=8',
-  './assets/css/catalog.css?v=7',
+  './assets/css/catalog.css?v=8',
   './assets/css/assistant.css?v=6',
   './assets/js/config.js?v=10',
   './assets/js/i18n.js?v=12',

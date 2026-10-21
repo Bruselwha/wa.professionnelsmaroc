@@ -147,13 +147,19 @@
 .cat-policies a { color: var(--muted); font-size: .84rem; }
 .cat-policies a:hover { color: var(--brand); text-decoration: underline; }
 
-/* Barra de filtros: colapsable en móvil */
+/* Menú del catálogo: en móvil se despliega con el botón, y los campos ocupan
+   todo el ancho como una lista de menú. */
 .filter-toggle { display: none; }
 .filter-fields { display: contents; }
 
 @media (max-width: 720px) {
-  .filter-toggle { display: inline-flex; width: 100%; justify-content: center; }
-  .filter-fields { display: none; width: 100%; flex-direction: column; gap: 10px; }
+  .filter-bar-cat { top: 62px; }
+  .filter-inner { padding: 8px 0; gap: 8px; }
+  .filter-toggle { display: inline-flex; width: 100%; justify-content: center; gap: 8px; }
+  .filter-fields { display: none; width: 100%; flex-direction: column; gap: 8px; }
   .filter-fields.open { display: flex; }
-  .filter-fields select, .filter-fields .search, .filter-fields .segmented, .filter-fields .btn { width: 100%; }
+  .filter-fields select, .filter-fields .search, .filter-fields .segmented, .filter-fields .btn { width: 100%; min-width: 0; }
+  .filter-fields select { padding: 12px 38px 12px 40px; }
+  .filter-fields .search { padding: 12px 14px 12px 40px; }
+  [dir="rtl"] .filter-fields .search { padding: 12px 40px 12px 14px; }
 }

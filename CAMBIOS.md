@@ -260,3 +260,17 @@ comprobaciones:
 
 - Nuevo **`GUIA-SUPABASE.md`**: pantalla por pantalla (crear proyecto, SQL
   Editor, claves, autenticación, primer admin, comprobaciones y errores).
+
+---
+
+# v17 · Menú del catálogo
+
+- «Todas las categorías» y el buscador pasan a ser una **barra de menú blanca
+  pegada a la cabecera**, fija al desplazarse (antes era una banda gris suelta).
+- El selector lleva icono de menú a la izquierda y flecha a la derecha,
+  dibujados en CSS (sin imágenes externas), con foco visible.
+- El buscador lleva la lupa dentro del campo.
+- En móvil se despliega con el botón «Filtros» y cada campo ocupa todo el ancho,
+  como una lista de menú.
+- Reflejado también en árabe (RTL): lupa e iconos cambian de lado.
+- `styles.css` → 13, `catalog.css` → 8, `CACHE_VERSION` → `cw-v15`.
