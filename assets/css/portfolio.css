@@ -1,0 +1,30 @@
+/* ==========================================================================
+   Catalogo Wha · portfolio.css
+   Solo la página pública de porfolio.
+   ========================================================================== */
+
+.portfolio-page { background: var(--bg); }
+
+.pf-hero { background: var(--brand); color: #fff; padding: clamp(28px, 6vw, 64px) 0; }
+.portfolio-page .pf-hero { background: linear-gradient(135deg, var(--brand), color-mix(in srgb, var(--brand) 70%, #000)); }
+.pf-hero h1 { margin: 6px 0 8px; font-size: clamp(1.6rem, 4.4vw, 2.4rem); line-height: 1.15; }
+.pf-hero p { margin: 0; opacity: .9; max-width: 60ch; }
+.pf-kicker { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 800; opacity: .85; }
+.pf-back { margin-top: 18px; background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .35); color: #fff; }
+.pf-back:hover { background: rgba(255, 255, 255, .22); color: #fff; }
+
+.pf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; padding: 30px 0 64px; }
+.pf-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; }
+.pf-media { aspect-ratio: 4/3; background: var(--line); overflow: hidden; }
+.pf-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s ease; }
+.pf-card:hover .pf-media img { transform: scale(1.04); }
+.pf-ph { width: 100%; height: 100%; display: grid; place-items: center; font-size: 2rem; color: var(--muted); }
+.pf-body { padding: 16px 18px 18px; }
+.pf-name { margin: 0 0 6px; font-size: 1.05rem; line-height: 1.3; }
+.pf-desc { margin: 0; color: var(--ink-2); font-size: .88rem; line-height: 1.55; }
+.pf-empty { padding-bottom: 70px; }
+
+@media (max-width: 720px) {
+  .pf-grid { grid-template-columns: 1fr; gap: 16px; padding: 22px 0 48px; }
+  .pf-hero { padding: 26px 0 30px; }
+}

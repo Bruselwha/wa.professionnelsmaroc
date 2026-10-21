@@ -1,0 +1,276 @@
+/* ==========================================================================
+   Catalogo Wha · landing.css
+   Estilos EXCLUSIVOS de la home (index.html). No afecta a otras páginas.
+   ========================================================================== */
+
+.lp {
+  --lp-bg: #f7f4fc;
+  --lp-card: #ffffff;
+  --lp-ink: #1b1230;
+  --lp-muted: #6b6580;
+  --lp-line: #ece6f6;
+  --lp-dark: #25123c;
+  --lp-grad: linear-gradient(135deg, #5B1A80, #8B5CF6);
+  --lp-radius: 22px;
+  --lp-shadow: 0 10px 34px rgba(60, 24, 96, .07);
+  background: var(--lp-bg);
+  color: var(--lp-ink);
+}
+
+.lp .lp-wrap { width: min(1140px, 92vw); margin-inline: auto; }
+
+/* ---------- Header ---------- */
+.lp-header {
+  position: sticky; top: 0; z-index: 60;
+  background: rgba(247, 244, 252, .9);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--lp-line);
+}
+.lp-header-inner { display: flex; align-items: center; gap: 20px; padding: 14px 0; }
+.lp-logo { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.18rem; }
+.lp-logo .mark {
+  width: 34px; height: 34px; border-radius: 11px; background: var(--lp-grad);
+  display: grid; place-items: center; color: #fff; font-size: 1rem;
+}
+.lp-logo span.accent { color: var(--brand); }
+.lp-nav { display: flex; gap: 24px; margin-inline-start: 12px; }
+.lp-nav a { font-size: .92rem; font-weight: 600; color: var(--lp-muted); }
+.lp-nav a:hover { color: var(--brand); }
+.lp-header-actions { margin-inline-start: auto; display: flex; align-items: center; gap: 10px; }
+
+/* ---------- Hero ---------- */
+.lp-hero { padding: clamp(34px, 6vw, 76px) 0 clamp(40px, 6vw, 80px); }
+.lp-hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 46px; align-items: center; }
+.lp-eyebrow {
+  display: inline-block; font-size: .72rem; letter-spacing: .14em; font-weight: 800;
+  color: var(--brand); background: #fff; border: 1px solid var(--lp-line);
+  border-radius: 999px; padding: 7px 15px; margin-bottom: 20px;
+}
+.lp-h1 { font-size: clamp(1.9rem, 4.4vw, 3rem); line-height: 1.1; margin: 0 0 16px; letter-spacing: -.02em; }
+.lp-h1 em { font-style: normal; color: var(--brand); }
+.lp-lead { font-size: 1.06rem; color: var(--lp-muted); max-width: 46ch; }
+.lp-bullets { list-style: none; padding: 0; margin: 20px 0; display: flex; flex-wrap: wrap; gap: 10px 22px; }
+.lp-bullets li { font-size: .92rem; font-weight: 600; color: var(--lp-ink); display: flex; align-items: center; gap: 8px; }
+.lp-bullets li::before { content: '✓'; color: #fff; background: var(--brand); width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: .7rem; }
+.lp-cta-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+.lp-mock { display: grid; place-items: center; }
+.lp-mock .phone { width: 268px; }
+.lp-mock-caption { margin-top: 16px; font-size: .8rem; font-style: italic; color: var(--lp-muted); }
+
+/* ---------- Secciones ---------- */
+.lp-section { padding: clamp(38px, 6vw, 72px) 0; }
+.lp-alt { background: #fff; }
+.lp-center { text-align: center; }
+.lp-label { display: block; font-size: .72rem; letter-spacing: .14em; font-weight: 800; color: var(--brand); margin-bottom: 12px; }
+.lp-h2 { font-size: clamp(1.45rem, 3.2vw, 2.15rem); line-height: 1.16; margin: 0 auto 14px; max-width: 22ch; letter-spacing: -.01em; }
+.lp-h2.left { margin-inline: 0; }
+.lp-sub { color: var(--lp-muted); max-width: 62ch; margin: 0 auto 34px; }
+
+/* ---------- Tarjetas genéricas ---------- */
+.lp-cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.lp-cards4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.lp-card {
+  background: var(--lp-card); border: 1px solid var(--lp-line);
+  border-radius: var(--lp-radius); padding: 24px; box-shadow: var(--lp-shadow);
+}
+.lp-card h3 { font-size: 1.05rem; margin: 0 0 8px; }
+.lp-card p { font-size: .9rem; color: var(--lp-muted); margin: 0; }
+.lp-icon {
+  width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center;
+  font-size: 1.25rem; background: #f3ecfb; margin-bottom: 14px;
+}
+
+/* ---------- Problema (comparativa) ---------- */
+.lp-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.lp-compare .lp-card { padding: 28px; }
+.lp-tag { display: inline-flex; align-items: center; gap: 6px; font-size: .74rem; font-weight: 800; padding: 5px 12px; border-radius: 999px; margin-bottom: 16px; }
+.lp-tag.bad { background: #fdeceb; color: #c0392b; }
+.lp-tag.good { background: #e7f8ef; color: #14804a; }
+.lp-list { list-style: none; padding: 0; margin: 0; }
+.lp-list li { position: relative; padding: 7px 0 7px 26px; font-size: .92rem; color: var(--lp-muted); }
+.lp-list li::before { position: absolute; inset-inline-start: 0; top: 7px; }
+.lp-list.bad li::before { content: '✕'; color: #c0392b; font-weight: 800; }
+.lp-list.good li::before { content: '✓'; color: #14804a; font-weight: 800; }
+.lp-compare .mock-row { display: grid; place-items: center; margin-bottom: 18px; }
+.lp-compare .phone { width: 170px; }
+.lp-compare .phone-screen { min-height: 0; padding: 26px 10px 10px; }
+
+/* ---------- Pasos ---------- */
+.lp-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; counter-reset: s; }
+.lp-step { background: var(--lp-card); border: 1px solid var(--lp-line); border-radius: var(--lp-radius); padding: 26px; box-shadow: var(--lp-shadow); }
+.lp-step-n {
+  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 13px;
+  background: var(--lp-grad); color: #fff; font-weight: 800; margin-bottom: 14px;
+}
+.lp-step h3 { font-size: 1.05rem; margin: 0 0 6px; }
+.lp-step p { font-size: .9rem; color: var(--lp-muted); margin: 0; }
+
+/* ---------- Split ---------- */
+.lp-split { display: grid; grid-template-columns: 1fr 1fr; gap: 46px; align-items: center; }
+.lp-split.rev .lp-split-copy { order: 2; }
+.lp-check { list-style: none; padding: 0; margin: 18px 0 0; }
+.lp-check li { position: relative; padding: 8px 0 8px 30px; font-size: .94rem; color: var(--lp-muted); }
+.lp-check li::before {
+  content: '✓'; position: absolute; inset-inline-start: 0; top: 8px;
+  width: 20px; height: 20px; border-radius: 50%; background: #f3ecfb; color: var(--brand);
+  display: grid; place-items: center; font-size: .7rem; font-weight: 800;
+}
+.lp-pill-note {
+  display: inline-block; margin-top: 16px; font-size: .78rem; font-weight: 700;
+  color: var(--brand); background: #f3ecfb; border-radius: 999px; padding: 7px 14px;
+}
+
+/* ---------- Tipos de negocio ---------- */
+.lp-types { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.lp-type {
+  background: var(--lp-card); border: 1px solid var(--lp-line); border-radius: 14px;
+  padding: 16px 10px; text-align: center; font-size: .86rem; font-weight: 650; box-shadow: var(--lp-shadow);
+}
+.lp-type span { display: block; font-size: 1.3rem; margin-bottom: 6px; }
+
+/* ---------- Banda oscura ---------- */
+.lp-dark { background: var(--lp-dark); color: #fff; padding: clamp(40px, 6vw, 76px) 0; }
+.lp-dark .lp-label { color: #c9a7f2; }
+.lp-dark .lp-h2 { color: #fff; }
+.lp-dark .lp-sub { color: #c3b8d8; }
+.lp-band { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 34px; }
+.lp-band-n { font-size: 1.9rem; font-weight: 800; color: #b98cf0; }
+.lp-band h4 { margin: 8px 0 6px; font-size: 1.05rem; }
+.lp-band p { color: #c3b8d8; font-size: .9rem; margin: 0; }
+
+/* ---------- Planes ---------- */
+.lp-plans { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; align-items: stretch; max-width: 860px; margin-inline: auto; }
+.lp-plans.single { grid-template-columns: minmax(0, 440px); justify-content: center; }
+.lp-plan {
+  background: var(--lp-card); border: 1px solid var(--lp-line); border-radius: 26px;
+  padding: 30px; box-shadow: var(--lp-shadow); display: flex; flex-direction: column;
+}
+.lp-plan.featured { border: 2px solid var(--brand); position: relative; }
+.lp-plan.featured::before {
+  content: 'Recomendado'; position: absolute; top: -13px; inset-inline-start: 30px;
+  background: var(--lp-grad); color: #fff; font-size: .68rem; font-weight: 800;
+  letter-spacing: .08em; padding: 5px 12px; border-radius: 999px;
+}
+.lp-plan h3 { font-size: 1.15rem; margin: 0 0 4px; }
+.lp-plan .plan-for { font-size: .86rem; color: var(--lp-muted); margin: 0 0 16px; }
+.lp-price { display: flex; align-items: baseline; gap: 6px; margin-bottom: 6px; }
+.lp-price b { font-size: 2.5rem; letter-spacing: -.02em; }
+.lp-price small { color: var(--lp-muted); font-size: .9rem; }
+.lp-plan .limit { font-size: .86rem; font-weight: 700; color: var(--brand); background: #f3ecfb; border-radius: 10px; padding: 9px 12px; margin: 12px 0 18px; }
+.lp-plan ul { list-style: none; padding: 0; margin: 0 0 24px; }
+.lp-plan li { position: relative; padding: 6px 0 6px 24px; font-size: .89rem; color: var(--lp-muted); }
+.lp-plan li::before { content: '✓'; position: absolute; inset-inline-start: 0; color: var(--brand); font-weight: 800; }
+.lp-plan .lp-plan-cta { margin-top: auto; }
+.lp-plan .lp-plan-cta .btn { width: 100%; }
+.lp-plan-note { font-size: .76rem; color: var(--lp-muted); text-align: center; margin-top: 10px; }
+
+/* ---------- Plantillas / ejemplos ---------- */
+.lp-templates { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+.lp-tpl { background: var(--lp-card); border: 1px solid var(--lp-line); border-radius: 18px; overflow: hidden; box-shadow: var(--lp-shadow); }
+.lp-tpl .cap { height: 92px; }
+.lp-tpl .body { padding: 14px; }
+.lp-tpl .body b { display: block; font-size: .9rem; }
+.lp-tpl .body small { color: var(--lp-muted); font-size: .78rem; }
+.lp-tpl .body a { display: inline-block; margin-top: 8px; font-size: .8rem; font-weight: 700; color: var(--brand); }
+.t1 { background: linear-gradient(135deg, #5B1A80, #a06cd5); }
+.t2 { background: linear-gradient(135deg, #0f766e, #5eead4); }
+.t3 { background: linear-gradient(135deg, #b45309, #fcd34d); }
+.t4 { background: linear-gradient(135deg, #1e3a8a, #60a5fa); }
+.t5 { background: linear-gradient(135deg, #831843, #fb7185); }
+
+/* ---------- FAQ ---------- */
+.lp-faq { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.lp-faq details { background: var(--lp-card); border: 1px solid var(--lp-line); border-radius: 16px; padding: 18px 20px; box-shadow: var(--lp-shadow); }
+.lp-faq summary { font-weight: 700; cursor: pointer; font-size: .95rem; }
+.lp-faq p { margin: 10px 0 0; color: var(--lp-muted); font-size: .9rem; }
+
+/* ---------- CTA final ---------- */
+.lp-final { background: var(--lp-dark); color: #fff; padding: clamp(46px, 7vw, 86px) 0; }
+.lp-final .lp-h2 { color: #fff; max-width: 24ch; }
+.lp-final .lp-sub { color: #c3b8d8; }
+.lp-final-blurbs { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 760px; margin: 30px auto 30px; text-align: start; }
+.lp-final-blurb { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 18px; padding: 20px; }
+.lp-final-blurb .ic { font-size: 1.3rem; }
+.lp-final-blurb b { display: block; margin: 8px 0 4px; }
+.lp-final-blurb p { color: #c3b8d8; font-size: .88rem; margin: 0; }
+.lp-final-price { color: #c3b8d8; font-size: .85rem; margin-top: 12px; }
+
+/* ---------- Footer ---------- */
+.lp-footer { background: #fff; border-top: 1px solid var(--lp-line); padding: 46px 0 22px; }
+.lp-footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 30px; }
+.lp-footer h5 { font-size: .82rem; letter-spacing: .06em; text-transform: uppercase; color: var(--lp-muted); margin-bottom: 12px; }
+.lp-footer a { display: block; font-size: .9rem; color: var(--lp-muted); padding: 4px 0; }
+.lp-footer a:hover { color: var(--brand); }
+.lp-footer-bottom { border-top: 1px solid var(--lp-line); margin-top: 30px; padding-top: 18px; display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; font-size: .84rem; color: var(--lp-muted); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1000px) {
+  .lp-hero-grid, .lp-split, .lp-compare { grid-template-columns: 1fr; }
+  .lp-split.rev .lp-split-copy { order: 0; }
+  .lp-cards4 { grid-template-columns: repeat(2, 1fr); }
+  .lp-types { grid-template-columns: repeat(3, 1fr); }
+  .lp-templates { grid-template-columns: repeat(2, 1fr); }
+  .lp-footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 720px) {
+  .lp-nav { display: none; }
+  /* En móvil «Iniciar sesión» y «Crear mi catálogo» viven solo en el menú
+     desplegable; en la cabecera queda únicamente el selector de idioma. */
+  .lp-header-actions .btn { display: none; }
+  .lp-cards3, .lp-cards4, .lp-steps, .lp-band, .lp-plans, .lp-faq, .lp-final-blurbs, .lp-types { grid-template-columns: 1fr; }
+  .lp-types { grid-template-columns: repeat(2, 1fr); }
+  .lp-templates { grid-template-columns: 1fr; }
+  .lp-footer-grid { grid-template-columns: 1fr; }
+  .lp-hero { padding-top: 24px; }
+}
+
+/* ==========================================================================
+   Imágenes configurables de la home
+   ========================================================================== */
+.lp-thumb { display: none; }
+.lp-thumb.has {
+  display: block; height: 132px; border-radius: 14px;
+  background-size: cover; background-position: center; margin-bottom: 14px;
+}
+.phone-screen.has { background-size: cover !important; background-position: center !important; }
+.phone-screen.has > * { display: none !important; }
+.cap.has { background-size: cover !important; background-position: center !important; }
+
+/* Menú móvil de la home
+   ========================================================================== */
+.lp-burger { display: none; background: #fff; border: 1px solid var(--lp-line); border-radius: 12px; width: 42px; height: 42px; font-size: 1.1rem; cursor: pointer; color: var(--lp-ink); }
+.lp-burger:hover { border-color: var(--brand); color: var(--brand); }
+.lp-mobile-menu { display: none; flex-direction: column; gap: 4px; padding: 10px 4vw 16px; background: #fff; border-bottom: 1px solid var(--lp-line); position: sticky; top: 63px; z-index: 55; }
+.lp-mobile-menu a { padding: 12px; border-radius: 12px; font-weight: 600; color: var(--lp-ink); }
+.lp-mobile-menu a:hover { background: var(--lp-bg); color: var(--brand); }
+.lp-mobile-menu .btn { justify-content: center; margin-top: 6px; }
+
+@media (max-width: 720px) {
+  .lp-burger { display: inline-flex; align-items: center; justify-content: center; }
+  .lp-mobile-menu { display: flex; }
+}
+
+/* Ajustes finos para moviles estrechos (390 px) */
+@media (max-width: 480px) {
+  .lp-header-inner { gap: 8px; padding: 10px 0; }
+  .lp-header-actions { gap: 6px; }
+  .lp-logo { font-size: clamp(.82rem, 3.4vw, 1rem); }
+  .lp-logo .mark { width: 30px; height: 30px; border-radius: 9px; }
+  .lp-h1 { font-size: clamp(1.55rem, 7.4vw, 2.1rem); }
+  .lp-lead { font-size: 1rem; }
+  .lp-hero-grid { gap: 26px; }
+  .lp-mock .phone { width: min(72vw, 248px); }
+  .lp-compare .phone { width: min(46vw, 160px); }
+  /* En pantallas estrechas el contenido del móvil se compacta para que no
+     se recorte dentro del marco. */
+  .lp-mock .mini-hero { padding: 13px; }
+  .lp-mock .mini-logo { width: 30px; height: 30px; }
+  .lp-mock .mini-img { height: 56px; }
+  .lp-mock .mini-wa { padding: 8px; font-size: .76rem; }
+  .lp-section { padding: 34px 0; }
+  .lp-card, .lp-step, .lp-plan { padding: 20px; }
+  .lp-final-blurbs { grid-template-columns: 1fr; }
+  .lp-bullets { gap: 8px 16px; }
+  .lp-cta-row .btn { flex: 1 1 auto; }
+}

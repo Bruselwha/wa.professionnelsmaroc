@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Catálogo · WA Professionnels Maroc</title>
+<meta name="description" content="Consulta el catálogo y haz tu pedido por WhatsApp.">
+<meta name="theme-color" content="#5B1A80">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%235B1A80'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='white'%3E%F0%9F%9B%92%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/css/styles.css?v=12">
+<link rel="stylesheet" href="assets/css/catalog.css?v=7">
+<link rel="stylesheet" href="assets/css/assistant.css?v=6">
+</head>
+<body class="catalog-page">
+<a class="skip-link" href="#catalog">Saltar al contenido</a>
+
+<!-- Cabecera -->
+<header class="cat-header" data-cat-header>
+  <div class="wrap cat-head-inner">
+    <div class="cat-brand" data-cat-brand></div>
+    <div class="cat-head-actions">
+      <div class="lang-switch" data-lang-switch></div>
+      <a class="btn ghost small" data-pf-link href="#" hidden>Porfolio</a>
+      <a class="btn wa small" data-wa-header href="#" target="_blank" rel="noopener">💬 WhatsApp</a>
+    </div>
+  </div>
+</header>
+
+<div data-catalog-root>
+  <div class="wrap loading-block" data-loading><p class="muted" data-i18n="common.loading">Cargando…</p></div>
+</div>
+
+<!-- Carrito -->
+<div class="cart-overlay" data-cart-overlay hidden></div>
+<aside class="cart-drawer" data-cart hidden>
+  <div class="cart-head">
+    <h3 data-i18n="cat.public.cart">Tu pedido</h3>
+    <button class="icon-btn" data-cart-close aria-label="Cerrar">✕</button>
+  </div>
+  <div class="cart-body" data-cart-body></div>
+  <div class="cart-foot" data-cart-foot></div>
+</aside>
+
+<button class="cart-fab" data-cart-fab hidden>🛒 <span data-cart-count>0</span></button>
+
+<script defer src="assets/js/config.js?v=10"></script>
+<script defer src="assets/js/i18n.js?v=12"></script>
+<script defer src="assets/js/store.js?v=11"></script>
+<script defer src="assets/js/common.js?v=10"></script>
+<script defer src="assets/js/catalog.js?v=12"></script>
+<script defer src="assets/js/policies.js?v=7"></script>
+<script defer src="assets/js/assistant.js?v=6"></script>
+</body>
+</html>

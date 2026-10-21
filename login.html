@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Acceso · WA Professionnels Maroc</title>
+<meta name="description" content="Crea tu cuenta o inicia sesión en WA Professionnels Maroc.">
+<meta name="robots" content="noindex">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%235B1A80'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='white'%3E%F0%9F%9B%92%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/css/styles.css?v=12">
+</head>
+<body class="auth-page">
+<a class="skip-link" href="#main">Saltar al contenido</a>
+
+<div class="auth-wrap">
+  <aside class="auth-aside">
+    <a class="brand" href="./"><span class="brand-mark">🛒</span><span class="brand-name">WA<span> Professionnels Maroc</span></span></a>
+    <h2 data-i18n="landing.hero.title">Tu catálogo online, pedidos por WhatsApp</h2>
+    <ul class="auth-benefits">
+      <li>✓ <span data-i18n="landing.value.1">Listo en minutos</span></li>
+      <li>✓ <span data-i18n="landing.value.2">Sin comisiones</span></li>
+      <li>✓ <span data-i18n="landing.value.3">En 3 idiomas</span></li>
+    </ul>
+    <div class="auth-mock"><div class="phone small"><div class="phone-screen">
+      <div class="mini-hero"><div class="mini-logo">M</div><div class="mini-title">Mi negocio</div></div>
+      <div class="mini-grid"><div class="mini-card"><div class="mini-img"></div><div class="mini-line"></div></div><div class="mini-card"><div class="mini-img alt"></div><div class="mini-line"></div></div></div>
+    </div></div></div>
+  </aside>
+
+  <main class="auth-main" id="main">
+    <div class="auth-topbar">
+      <a class="brand only-mobile" href="./"><span class="brand-mark">🛒</span><span class="brand-name">WA<span> Professionnels Maroc</span></span></a>
+      <div class="lang-switch" data-lang-switch></div>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="signin" data-i18n="login.signin">Iniciar sesión</button>
+        <button class="auth-tab" data-tab="signup" data-i18n="login.signup">Crear cuenta</button>
+      </div>
+
+      <!-- Acceso -->
+      <section data-panel="signin">
+        <h1 data-i18n="login.welcome">Bienvenido de nuevo</h1>
+        <form data-form-signin novalidate>
+          <label class="field"><span data-i18n="login.email">Correo electrónico</span>
+            <input type="email" name="email" autocomplete="email" required placeholder="tu@correo.com"></label>
+          <label class="field"><span data-i18n="login.password">Contraseña</span>
+            <input type="password" name="password" autocomplete="current-password" required minlength="6"></label>
+          <div class="row-between">
+            <button type="button" class="link" data-goto="forgot" data-i18n="login.forgot">¿Olvidaste tu contraseña?</button>
+          </div>
+          <div class="form-error" data-error-signin hidden></div>
+          <button class="btn primary block" type="submit" data-i18n="login.submit">Entrar</button>
+        </form>
+        <p class="switch-line"><span data-i18n="login.no">¿No tienes cuenta?</span>
+          <button class="link" data-goto="signup" data-i18n="login.signup">Crear cuenta</button></p>
+      </section>
+
+      <!-- Registro -->
+      <section data-panel="signup" hidden>
+        <h1 data-i18n="login.start">Crea tu catálogo gratis</h1>
+        <form data-form-signup novalidate>
+          <label class="field"><span data-i18n="login.business">Nombre del negocio</span>
+            <input type="text" name="business" required placeholder="Marmol"></label>
+          <label class="field"><span data-i18n="login.email">Correo electrónico</span>
+            <input type="email" name="email" autocomplete="email" required placeholder="tu@correo.com"></label>
+          <label class="field"><span data-i18n="login.password">Contraseña</span>
+            <input type="password" name="password" autocomplete="new-password" required minlength="6"></label>
+          <div class="form-error" data-error-signup hidden></div>
+          <button class="btn primary block" type="submit" data-i18n="login.create">Crear mi cuenta</button>
+        </form>
+        <p class="switch-line"><span data-i18n="login.have">¿Ya tienes cuenta?</span>
+          <button class="link" data-goto="signin" data-i18n="login.signin">Iniciar sesión</button></p>
+      </section>
+
+      <!-- Recuperar -->
+      <section data-panel="forgot" hidden>
+        <h1 data-i18n="login.forgot">¿Olvidaste tu contraseña?</h1>
+        <form data-form-forgot novalidate>
+          <label class="field"><span data-i18n="login.email">Correo electrónico</span>
+            <input type="email" name="email" required placeholder="tu@correo.com"></label>
+          <button class="btn primary block" type="submit" data-i18n="common.confirm">Confirmar</button>
+        </form>
+        <p class="switch-line"><button class="link" data-goto="signin" data-i18n="common.back">Volver</button></p>
+      </section>
+
+      <p class="demo-note" data-demo-note hidden data-i18n="login.demo.note">Estás en modo demo: los datos se guardan solo en este navegador.</p>
+
+      <!-- Pie legal: abre las políticas en un pop-up, igual que en la home -->
+      <footer class="auth-legal">
+        <nav class="auth-legal-links" aria-label="Legal">
+          <a href="#" data-policy="legal" data-i18n="pol.legal">Aviso legal</a>
+          <a href="#" data-policy="privacy" data-i18n="pol.privacy">Privacidad</a>
+          <a href="#" data-policy="cookies" data-i18n="pol.cookies">Cookies</a>
+          <a href="#" data-policy="terms" data-i18n="pol.terms">Términos</a>
+          <a href="#" data-policy="returns" data-i18n="pol.returns">Devoluciones</a>
+          <a href="#" data-policy="shipping" data-i18n="pol.shipping">Envíos</a>
+        </nav>
+        <small class="muted">© <span data-year></span> WA Professionnels Maroc</small>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<script defer src="assets/js/config.js?v=10"></script>
+<script defer src="assets/js/i18n.js?v=12"></script>
+<script defer src="assets/js/store.js?v=11"></script>
+<script defer src="assets/js/common.js?v=10"></script>
+<script defer src="assets/js/auth.js?v=10"></script>
+<script defer src="assets/js/policies.js?v=7"></script>
+<script>document.querySelectorAll('[data-year]').forEach(function(e){e.textContent=new Date().getFullYear();});</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+/* ==========================================================================
+   Catalogo Wha · catalog.css
+   Tarjetas del catálogo optimizadas según el tipo (producto / servicio).
+   Solo lo carga catalogo.html.
+   ========================================================================== */
+
+.pc {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  transition: transform .16s, box-shadow .16s, border-color .16s;
+}
+.pc:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.pc--service { border-color: #e4d6f6; }
+.pc--service:hover { border-color: var(--brand); }
+
+/* --- Media --- */
+.pc-media { position: relative; aspect-ratio: 4/3; background: var(--line); cursor: pointer; overflow: hidden; }
+.pc-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+.pc:hover .pc-media img { transform: scale(1.04); }
+.pc-media .ph-img { width: 100%; height: 100%; display: grid; place-items: center; font-size: 2rem; color: var(--muted); }
+
+.pc-kind {
+  position: absolute; top: 10px; inset-inline-start: 10px;
+  background: var(--brand); color: #fff; border-radius: 999px;
+  padding: 4px 11px; font-size: .71rem; font-weight: 800; letter-spacing: .02em;
+}
+.pc-cat {
+  position: absolute; bottom: 10px; inset-inline-start: 10px;
+  background: rgba(255,255,255,.95); color: var(--ink); border-radius: 999px;
+  padding: 4px 11px; font-size: .71rem; font-weight: 700;
+}
+.pc-off {
+  position: absolute; top: 10px; inset-inline-end: 10px;
+  background: #e11d48; color: #fff; border-radius: 999px;
+  padding: 4px 11px; font-size: .71rem; font-weight: 800;
+}
+.pc-incart {
+  position: absolute; bottom: 10px; inset-inline-end: 10px;
+  background: #14804a; color: #fff; border-radius: 999px;
+  padding: 4px 11px; font-size: .71rem; font-weight: 800;
+}
+
+/* --- Cuerpo --- */
+.pc-body { padding: 15px 16px 16px; display: flex; flex-direction: column; flex: 1; }
+.pc-name { font-size: 1.02rem; margin: 0 0 9px; line-height: 1.25; }
+.pc-desc { font-size: .84rem; line-height: 1.5; color: var(--ink-2); margin: 0 0 10px; }
+.pc--service .pc-desc { color: var(--ink-2); }
+
+.pc-price { display: flex; align-items: baseline; gap: 8px; margin-bottom: 9px; flex-wrap: wrap; }
+.pc-price b { font-size: 1.2rem; letter-spacing: -.01em; }
+.pc-price s { color: var(--muted); font-size: .84rem; }
+.pc-price.consult b { color: var(--brand); font-size: 1rem; }
+.pc--service .pc-price b { color: var(--brand); }
+
+.pc-specs { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-bottom: 13px; }
+.pc-specs span { font-size: .8rem; color: var(--ink-2); }
+.pc-specs .ok { color: #14804a; font-weight: 700; }
+.pc-specs .save { color: var(--brand); font-weight: 700; }
+
+.pc-actions { display: flex; gap: 8px; margin-top: auto; }
+.pc-actions .btn { flex: 1; }
+
+/* Distintivo sutil para servicios */
+.pc--service .pc-name { position: relative; }
+
+/* ==========================================================================
+   Tarjeta de SERVICIO: disposición propia (duración, modalidad, reserva)
+   ========================================================================== */
+.pc--service { border-color: #e2d4f5; }
+.pc--service .pc-body { background: linear-gradient(180deg, #faf7fe, #fff 42%); }
+.pc--service .pc-name { font-size: 1.06rem; margin-bottom: 10px; }
+
+.pc-specs-list { display: flex; flex-direction: column; gap: 7px; margin: 0 0 14px; }
+.pc-spec { display: flex; align-items: center; gap: 9px; font-size: .86rem; color: var(--ink-2); }
+.pc-spec i {
+  font-style: normal; width: 24px; height: 24px; border-radius: 8px;
+  background: var(--brand-soft); color: var(--brand);
+  display: grid; place-items: center; font-size: .78rem; flex: 0 0 auto;
+}
+
+.pc-service-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding-top: 11px; margin: 0 0 13px; border-top: 1px dashed var(--line-2);
+}
+.pc-service-foot .pc-price { margin: 0; }
+.pc-service-foot .pc-price b { font-size: 1.05rem; color: var(--brand); }
+.pc-service-foot .pc-price b.consult { font-size: .92rem; }
+.pc-avail {
+  font-size: .74rem; font-weight: 800; color: #14804a;
+  background: #e7f8ef; border-radius: 999px; padding: 4px 10px; white-space: nowrap;
+}
+.pc--service .pc-actions .btn.soft { background: var(--brand-soft); color: var(--brand); border-color: transparent; }
+.pc--service .pc-actions .btn.soft:hover { background: #e9dcf8; }
+
+/* En pantallas muy pequeñas, acciones apiladas */
+@media (max-width: 380px) {
+  .pc-actions { flex-direction: column; }
+}
+
+/* Botón de compartir en la tarjeta */
+.pc-share { flex: 0 0 auto !important; padding-inline: 12px !important; }
+
+/* ==========================================================================
+   Ficha de detalle (arreglo del solapamiento de texto)
+   ========================================================================== */
+.detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.detail-info { min-width: 0; }
+
+/* Antes se reutilizaba .card-chip, que es position:absolute y tapaba el texto. */
+.detail-type {
+  display: inline-block;
+  background: var(--brand-soft); color: var(--brand);
+  border-radius: 999px; padding: 5px 12px;
+  font-size: .74rem; font-weight: 800; letter-spacing: .02em;
+  margin-bottom: 10px; position: static;
+}
+.detail-info h2 { margin: 0 0 8px; font-size: 1.35rem; line-height: 1.2; }
+.detail-price { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+.detail-price b { font-size: 1.4rem; }
+.detail-price s { color: var(--muted); font-size: .95rem; }
+.detail-rows { list-style: none; padding: 0; margin: 12px 0; }
+.detail-rows li { padding: 7px 0; font-size: .92rem; border-bottom: 1px solid var(--line); }
+.detail-rows li:last-child { border-bottom: 0; }
+.detail-desc { color: var(--ink-2); font-size: .93rem; line-height: 1.65; margin: 12px 0 0; white-space: pre-line; }
+.detail-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.detail-actions .btn { flex: 1; min-width: 150px; }
+
+.dg-main { border-radius: 14px; overflow: hidden; background: var(--line); aspect-ratio: 4/3; }
+.dg-main img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* En móvil la ficha se convierte en hoja inferior */
+@media (max-width: 720px) {
+  .detail-grid { grid-template-columns: 1fr; gap: 18px; }
+  .cw-modal-overlay:has(.detail-modal) { align-items: end; padding: 0; }
+  .detail-modal { width: 100%; max-height: 92vh; border-radius: 22px 22px 0 0; }
+  .detail-modal .cw-modal-body { padding: 18px 16px; }
+  .detail-actions .btn { min-width: 0; }
+}
+
+/* Politicas en el pie del catalogo */
+.cat-policies { display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: center; margin-top: 10px; }
+.cat-policies a { color: var(--muted); font-size: .84rem; }
+.cat-policies a:hover { color: var(--brand); text-decoration: underline; }
+
+/* Barra de filtros: colapsable en móvil */
+.filter-toggle { display: none; }
+.filter-fields { display: contents; }
+
+@media (max-width: 720px) {
+  .filter-toggle { display: inline-flex; width: 100%; justify-content: center; }
+  .filter-fields { display: none; width: 100%; flex-direction: column; gap: 10px; }
+  .filter-fields.open { display: flex; }
+  .filter-fields select, .filter-fields .search, .filter-fields .segmented, .filter-fields .btn { width: 100%; }
+}
