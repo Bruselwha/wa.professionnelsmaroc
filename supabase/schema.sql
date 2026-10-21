@@ -12,7 +12,14 @@
 --   · tabla portfolio (nueva)
 -- ============================================================================
 
-create extension if not exists pgcrypto;
+-- pgcrypto ya está activo en Supabase. Se intenta igualmente por si acaso;
+-- si el servidor no lo tiene, gen_random_uuid() es nativo desde PostgreSQL 13.
+do $$
+begin
+  create extension if not exists pgcrypto;
+exception when others then
+  raise notice 'pgcrypto no disponible; se usa gen_random_uuid() nativo';
+end $$;
 
 -- ============================================================================
 -- 1. TABLAS

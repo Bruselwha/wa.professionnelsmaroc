@@ -12,7 +12,7 @@
     appName: 'WA Professionnels Maroc',
 
     // --- Supabase (déjalas vacías para MODO DEMO) -------------------------
-    SUPABASE_URL: 'https://veoyprwyvlznsadhlodn.supabase.co',        // p.ej. 'https://xxxxxxxx.supabase.co'
+    SUPABASE_URL: 'https://wbmpzbshifrvfyxzediz.supabase.co',        // p.ej. 'https://xxxxxxxx.supabase.co'
     SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXB6YnNoaWZydmZ5eHplZGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMjc1MzQsImV4cCI6MjEwNzkwMzUzNH0.iC8PYTlz6SFtHZ27mB1EFcOrpiwAgwkT4pLmTLmEn9U',   // p.ej. 'eyJhbGciOi...'
 
     // --- Dominio público (solo el host, sin https:// ni barra final) ------

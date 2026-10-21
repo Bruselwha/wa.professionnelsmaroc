@@ -459,7 +459,13 @@
         return Promise.resolve(o);
       }
       delete o.id;
-      return sb.from('orders').insert(o).select().maybeSingle().then(function (r) { if (r.error) throw r.error; return r.data; });
+      // Sin .select(): quien crea el pedido es el cliente (rol anon), que tiene
+      // permiso de INSERT pero no de lectura sobre `orders`. Con RETURNING
+      // PostgreSQL exigiría también privilegio de SELECT y el pedido fallaría.
+      // Devolvemos el objeto que ya tenemos en memoria.
+      return sb.from('orders').insert(o).then(function (r) {
+        if (r.error) throw r.error; return o;
+      });
     },
 
     updateOrderStatus: function (id, status) {

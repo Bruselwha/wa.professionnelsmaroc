@@ -221,3 +221,42 @@ Preparado para desplegarse como proyecto independiente.
 - `.brand-name` del panel se parte en dos líneas sin romper el sidebar.
 - En móvil el logotipo de la home usa `clamp(.82rem, 3.4vw, 1rem)` para que
   quepa junto al selector de idioma y el botón de menú a 360 px.
+
+---
+
+# v16 · Verificación del esquema contra PostgreSQL real
+
+## Comprobado
+
+Se montó un PostgreSQL 16 real simulando lo que aporta Supabase (`auth.users`,
+`auth.uid()`, `auth.jwt()`, `storage.buckets/objects` y los roles
+`anon`/`authenticated`) y se ejecutó `supabase/schema.sql` dos veces, con 41
+comprobaciones:
+
+- Se crean las 10 tablas, las 8 funciones, los 2 triggers, 32 políticas, el
+  bucket público y los permisos.
+- Al registrarse se crea el negocio con el slug del formulario, se crea la
+  categoría «Otros» y los slugs repetidos se hacen únicos.
+- `is_admin()` y `make_admin()`: bootstrap del primero, enlace del `user_id` y
+  bloqueo para quien no es admin.
+- Permisos por rol: anon lee catálogo/porfolio y crea pedidos, pero no lee
+  pedidos; el dueño edita lo suyo y otro usuario no; el gestor de cobertura sí;
+  `site_settings` solo lo escribe el admin.
+- Enlace de invitaciones por correo, contador de visitas y borrado en cascada.
+- Re-ejecutar el esquema con datos dentro no rompe nada ni pierde datos.
+
+## Correcciones
+
+1. **Pedidos que fallaban con `permission denied`** (fallo real, habría roto la
+   creación de pedidos en el proyecto nuevo): `createOrder()` hacía
+   `insert(...).select()`, y `RETURNING` exige privilegio de **lectura** sobre
+   `orders`, que `anon` no tiene (ni debe tener). Ahora inserta sin `RETURNING`
+   y devuelve el objeto que ya está en memoria (`assets/js/store.js`).
+2. **`pgcrypto`**: la creación de la extensión va dentro de un bloque tolerante,
+   porque `gen_random_uuid()` es nativo desde PostgreSQL 13. En Supabase no
+   cambia nada; fuera de Supabase evita que el script aborte.
+
+## Documentación
+
+- Nuevo **`GUIA-SUPABASE.md`**: pantalla por pantalla (crear proyecto, SQL
+  Editor, claves, autenticación, primer admin, comprobaciones y errores).
