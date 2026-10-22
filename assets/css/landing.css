@@ -93,7 +93,7 @@
 .lp-list.bad li::before { content: '✕'; color: #c0392b; font-weight: 800; }
 .lp-list.good li::before { content: '✓'; color: #14804a; font-weight: 800; }
 .lp-compare .mock-row { display: grid; place-items: center; margin-bottom: 18px; }
-.lp-compare .phone { width: 170px; }
+.lp-compare .phone { width: 192px; }
 .lp-compare .phone-screen { min-height: 0; padding: 26px 10px 10px; }
 
 /* ---------- Pasos ---------- */
@@ -282,7 +282,7 @@
   .lp-mock { margin-top: 6px; }
   .lp-mock-caption { margin-top: 12px; }
   .lp-mock .phone { width: min(72vw, 248px); }
-  .lp-compare .phone { width: min(46vw, 160px); }
+  .lp-compare .phone { width: min(48vw, 178px); }
   /* En pantallas estrechas el contenido del móvil se compacta para que no
      se recorte dentro del marco. */
   .lp-mock .mini-hero { padding: 13px; }

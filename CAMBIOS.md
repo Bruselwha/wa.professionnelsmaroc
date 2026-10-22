@@ -534,3 +534,48 @@ trabajo del porfolio, información del negocio y demo).
 
 150 comprobaciones: 126 jsdom de catálogo/panel (incluye doble clic, aviso de
 progreso, error total y error parcial), 24 de datos y 48 sobre PostgreSQL 16.
+
+---
+
+# v23 · Nueva home, arreglo de guardado y ajustes
+
+## 1. Home nueva (solo la home)
+
+- `index.html` reescrito con un diseño distinto (`assets/css/home.css`): cabecera
+  limpia, hero a dos columnas con móvil y tarjetas flotantes, franja de cifras,
+  tarjetas de valor, pasos, tipos de negocio, banda de demo en degradado y CTA
+  final. El catálogo, el panel y el porfolio **no se han tocado**.
+- **Francés como idioma principal**: la página abre en francés si el visitante
+  no ha elegido otro idioma (el selector de idioma sigue funcionando).
+- Los tipos de negocio del pop-up están ahora en francés.
+- Se mantiene todo lo que había: políticas en pop-up, imágenes configurables
+  desde Administración, PWA y enlaces de acceso/registro.
+
+## 2. Tarjetas del catálogo
+
+- Un poco más anchas: de 230 px a 252 px de mínimo, con 20 px de separación.
+
+## 3. Teléfonos de «Sin un catálogo / Con tu catálogo»
+
+- De 170 px a 192 px en escritorio y de 160 px a 178 px en móvil.
+
+## 4. Arreglo: «No se pudo guardar» en productos, servicios y trabajos
+
+- Causa: la base de datos no tenía algunas columnas nuevas (`i18n`,
+  `requirements`, `details`, `client`, `place`, `work_date`…), y PostgREST
+  rechaza **toda** la operación cuando una columna no existe.
+- Ahora `saveCategory`, `saveProduct` y `savePortfolioItem` reintentan solos
+  descartando la columna que el servidor no conoce, igual que ya hacía el
+  negocio. El artículo se guarda igualmente.
+- Para que además se guarden las traducciones y los detalles, hay que poner el
+  esquema al día: **vuelve a ejecutar `supabase/schema.sql`** (es idempotente y
+  no borra datos).
+
+## Caché
+
+`CACHE_VERSION` → `cw-v21`; `home.css` 1, `landing.js` 2, `store.js` 12.
+
+## Verificación
+
+206 comprobaciones: 134 jsdom de catálogo/panel/home, 24 de datos y 48 sobre
+PostgreSQL 16 real.

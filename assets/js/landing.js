@@ -11,83 +11,60 @@
   // Contenido por tipo de negocio. `cat` son categorías de ejemplo y `tips`
   // las funciones del catálogo que más le sirven a ese tipo de negocio.
   var TYPES = {
-    tienda: {
-      title: 'Tienda', icon: '🛒',
-      intro: 'Catálogo general con stock variado: lo importante es que el cliente encuentre rápido y vea el precio final.',
-      cats: ['Novedades', 'Ofertas', 'Accesorios', 'Pack regalo'],
-      tips: ['Categorías activas/inactivas para temporadas', 'Precio de oferta con descuento visible', 'Entrega o retiro configurables']
-    },
-    moda: {
-      title: 'Moda', icon: '👗',
-      intro: 'Ropa y complementos donde la talla y el color deciden la compra. La foto manda.',
-      cats: ['Mujer', 'Hombre', 'Niños', 'Rebajas'],
-      tips: ['Hasta 5 fotos por artículo', 'Variantes en la descripción (talla, color)', 'Pedido por WhatsApp con cantidades']
-    },
-    calzado: {
-      title: 'Calzado', icon: '👟',
-      intro: 'Zapatería con tallas limitadas: conviene dejar claro qué hay y qué se encarga.',
-      cats: ['Deportivo', 'Casual', 'Niños', 'Outdoor'],
-      tips: ['Descripción corta con talla y material', 'Artículos ocultos cuando no hay stock', 'Pedidos con nota de talla']
-    },
-    abarrotes: {
-      title: 'Abarrotes', icon: '🧺',
-      intro: 'Compra diaria y pedidos repetidos: el catálogo ahorra decenas de mensajes.',
-      cats: ['Frescos', 'Despensa', 'Bebidas', 'Limpieza'],
-      tips: ['Carrito con cantidades', 'Tarifa de entrega por zona', 'Categorías por pasillo']
-    },
-    limpieza: {
-      title: 'Limpieza', icon: '🧴',
-      intro: 'Productos de limpieza y también servicios de limpieza a domicilio.',
-      cats: ['Hogar', 'Industrial', 'Servicios', 'Packs'],
-      tips: ['Mezcla productos y servicios en un catálogo', 'Servicios con reserva y calendario', 'Formas de pago configurables']
-    },
-    belleza: {
-      title: 'Belleza', icon: '💅',
-      intro: 'Peluquería, estética o uñas: el cliente elige servicio, día y hora desde el catálogo.',
-      cats: ['Cortes', 'Color', 'Manicura', 'Tratamientos'],
-      tips: ['Reserva con calendario y horas reales', 'Duración por servicio', 'Agenda con las citas del día']
-    },
-    tecnologia: {
-      title: 'Tecnología', icon: '📱',
-      intro: 'Móviles, accesorios y reparaciones conviven en el mismo catálogo.',
-      cats: ['Móviles', 'Accesorios', 'Reparaciones', 'Segunda mano'],
-      tips: ['Productos con promo y precio anterior tachado', 'Servicio técnico con reserva', 'Ficha con especificaciones']
-    },
-    electricidad: {
-      title: 'Electricidad', icon: '⚡',
-      intro: 'Servicios técnicos con desplazamiento: hay que pedir dirección y describir la avería.',
-      cats: ['Instalaciones', 'Reparaciones', 'Urgencias', 'Materiales'],
-      tips: ['Servicio a domicilio con dirección en la reserva', 'Detalles para el profesional', 'Contacto guardado como lead']
-    },
-    juguetes: {
-      title: 'Juguetes', icon: '🧸',
-      intro: 'Juguetes y regalos con picos de venta en fechas concretas.',
-      cats: ['Educativos', 'Peluches', 'Exterior', 'Regalos'],
-      tips: ['Categorías que se activan por campaña', 'Packs y precios de oferta', 'Fotos grandes para mostrar el producto']
-    },
-    libreria: {
-      title: 'Librería', icon: '📚',
-      intro: 'Libros, papelería y material escolar; el buscador es la herramienta clave.',
-      cats: ['Libros', 'Papelería', 'Escolar', 'Arte'],
-      tips: ['Buscador por nombre y descripción', 'Categorías por curso o género', 'Pedidos con nota (título, autor)']
-    },
-    mascotas: {
-      title: 'Mascotas', icon: '🐾',
-      intro: 'Piensos, accesorios y servicios como peluquería canina.',
-      cats: ['Alimentación', 'Accesorios', 'Peluquería', 'Salud'],
-      tips: ['Suscripción de pienso vía pedidos repetidos', 'Servicios con cita', 'Peso y formato en la descripción']
-    },
-    deportes: {
-      title: 'Deportes', icon: '⚽',
-      intro: 'Material deportivo y clases o entrenamientos con horario.',
-      cats: ['Fútbol', 'Gimnasio', 'Running', 'Clases'],
-      tips: ['Productos y clases en el mismo catálogo', 'Reserva de sesiones con calendario', 'Horarios de atención visibles']
-    }
+    tienda: { title: 'Boutique', icon: '🛒', fr: {
+      intro: 'Catalogue général : le client doit trouver vite et voir le prix final.',
+      cats: ['Nouveautés', 'Promotions', 'Accessoires', 'Coffrets'],
+      tips: ['Catégories activables selon la saison', 'Prix barré sur les promotions', 'Livraison ou retrait configurables'] } },
+    moda: { title: 'Mode', icon: '👗', fr: {
+      intro: 'Vêtements et accessoires : la taille et la couleur décident de l’achat. La photo compte.',
+      cats: ['Femme', 'Homme', 'Enfants', 'Soldes'],
+      tips: ['Jusqu’à 5 photos par article', 'Tailles et couleurs dans la description', 'Commande WhatsApp avec quantités'] } },
+    calzado: { title: 'Chaussures', icon: '👟', fr: {
+      intro: 'Chaussures avec tailles limitées : montrez ce qui est disponible et ce qui se commande.',
+      cats: ['Sport', 'Ville', 'Enfants', 'Outdoor'],
+      tips: ['Description courte avec taille et matière', 'Articles masqués quand il n’y a plus de stock', 'Note de taille dans la commande'] } },
+    abarrotes: { title: 'Épicerie', icon: '🧺', fr: {
+      intro: 'Achats quotidiens et commandes répétées : le catalogue évite des dizaines de messages.',
+      cats: ['Frais', 'Épicerie', 'Boissons', 'Entretien'],
+      tips: ['Panier avec quantités', 'Frais de livraison par zone', 'Catégories par rayon'] } },
+    limpieza: { title: 'Nettoyage', icon: '🧴', fr: {
+      intro: 'Produits d’entretien et aussi prestations de nettoyage à domicile.',
+      cats: ['Maison', 'Professionnel', 'Services', 'Packs'],
+      tips: ['Produits et services dans un même catalogue', 'Services avec réservation et calendrier', 'Moyens de paiement configurables'] } },
+    belleza: { title: 'Beauté', icon: '💅', fr: {
+      intro: 'Coiffure, esthétique ou ongles : le client choisit la prestation, le jour et l’heure.',
+      cats: ['Coupes', 'Couleur', 'Manucure', 'Soins'],
+      tips: ['Réservation avec calendrier et vraies disponibilités', 'Durée par prestation', 'Agenda avec les rendez-vous du jour'] } },
+    tecnologia: { title: 'Technologie', icon: '📱', fr: {
+      intro: 'Téléphones, accessoires et réparations dans le même catalogue.',
+      cats: ['Téléphones', 'Accessoires', 'Réparations', 'Occasion'],
+      tips: ['Promotions avec ancien prix barré', 'Service technique avec réservation', 'Fiche avec caractéristiques'] } },
+    electricidad: { title: 'Électricité', icon: '⚡', fr: {
+      intro: 'Services techniques avec déplacement : il faut l’adresse et la description de la panne.',
+      cats: ['Installations', 'Réparations', 'Urgences', 'Matériel'],
+      tips: ['Service à domicile avec adresse dans la réservation', 'Détails pour le professionnel', 'Contact enregistré comme prospect'] } },
+    juguetes: { title: 'Jouets', icon: '🧸', fr: {
+      intro: 'Jouets et cadeaux avec des pics de ventes à certaines dates.',
+      cats: ['Éducatifs', 'Peluches', 'Extérieur', 'Cadeaux'],
+      tips: ['Catégories activées par campagne', 'Packs et prix promotionnels', 'Grandes photos pour montrer le produit'] } },
+    libreria: { title: 'Librairie', icon: '📚', fr: {
+      intro: 'Livres, papeterie et fournitures scolaires : la recherche est l’outil clé.',
+      cats: ['Livres', 'Papeterie', 'Scolaire', 'Art'],
+      tips: ['Recherche par nom et description', 'Catégories par niveau ou genre', 'Commande avec note (titre, auteur)'] } },
+    mascotas: { title: 'Animaux', icon: '🐾', fr: {
+      intro: 'Croquettes, accessoires et services comme le toilettage.',
+      cats: ['Alimentation', 'Accessoires', 'Toilettage', 'Santé'],
+      tips: ['Commandes répétées pour les croquettes', 'Services sur rendez-vous', 'Poids et format dans la description'] } },
+    deportes: { title: 'Sport', icon: '⚽', fr: {
+      intro: 'Matériel sportif et cours ou entraînements avec horaires.',
+      cats: ['Football', 'Salle', 'Running', 'Cours'],
+      tips: ['Produits et cours dans le même catalogue', 'Réservation de séances avec calendrier', 'Horaires d’ouverture visibles'] } }
   };
 
   function open(type) {
     var d = TYPES[type];
     if (!d) return;
+    if (d.fr) d = { title: d.title, icon: d.icon, intro: d.fr.intro, cats: d.fr.cats, tips: d.fr.tips };
     var html =
       '<div class="bt-top"><span class="bt-ico">' + d.icon + '</span><div><h3>' + d.title + '</h3><p>' + d.intro + '</p></div></div>' +
       '<h4 class="bt-h">Categorías que suelen funcionar</h4>' +

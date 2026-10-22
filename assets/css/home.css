@@ -1,0 +1,189 @@
+/* ==========================================================================
+   WA Professionnels Maroc · home.css
+   Estilo propio de la página de inicio (independiente del catálogo y del panel).
+   ========================================================================== */
+
+:root {
+  --h-ink: #14121b;
+  --h-ink-2: #4b4857;
+  --h-muted: #7c7889;
+  --h-line: #e9e6f0;
+  --h-bg: #fbfafd;
+  --h-surface: #ffffff;
+  --h-brand: #5b1a80;
+  --h-brand-2: #8b2fc9;
+  --h-accent: #f4b73f;
+  --h-radius: 22px;
+  --h-shadow: 0 20px 50px rgba(24, 16, 48, .10);
+}
+
+.hm-body { background: var(--h-bg); color: var(--h-ink); }
+
+/* ---------- Cabecera ---------- */
+.hm-header {
+  position: sticky; top: 0; z-index: 60;
+  background: rgba(251, 250, 253, .88);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--h-line);
+}
+.hm-wrap { width: min(1180px, 92vw); margin-inline: auto; }
+.hm-nav-row { display: flex; align-items: center; gap: 20px; height: 70px; }
+.hm-logo { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.05rem; color: var(--h-ink); letter-spacing: -.01em; }
+.hm-logo .mark {
+  width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--h-brand), var(--h-brand-2)); color: #fff; font-weight: 900;
+}
+.hm-logo b { color: var(--h-brand); }
+.hm-nav { display: flex; gap: 26px; margin-inline: auto; }
+.hm-nav a { color: var(--h-ink-2); font-weight: 600; font-size: .92rem; }
+.hm-nav a:hover { color: var(--h-brand); }
+.hm-actions { display: flex; align-items: center; gap: 10px; }
+.hm-burger {
+  display: none; width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--h-line);
+  background: #fff; font-size: 1.15rem; cursor: pointer; color: var(--h-ink);
+}
+.hm-mobile { display: none; border-top: 1px solid var(--h-line); background: #fff; padding: 12px 4vw 18px; }
+.hm-mobile.open { display: flex; flex-direction: column; gap: 8px; }
+.hm-mobile a { padding: 11px 12px; border-radius: 12px; font-weight: 650; color: var(--h-ink); }
+.hm-mobile a:hover { background: var(--h-bg); color: var(--h-brand); }
+.hm-mobile .btn { justify-content: center; }
+.hm-mobile .lang-switch { align-self: flex-start; margin: 4px 0; }
+
+/* ---------- Hero ---------- */
+.hm-hero { position: relative; overflow: hidden; padding: clamp(38px, 7vw, 88px) 0 clamp(40px, 7vw, 90px); }
+.hm-hero::before {
+  content: ''; position: absolute; inset-block-start: -220px; inset-inline-end: -180px;
+  width: 620px; height: 620px; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(139, 47, 201, .18), transparent 62%);
+  pointer-events: none;
+}
+.hm-hero-grid { display: grid; grid-template-columns: 1.06fr .94fr; gap: 54px; align-items: center; position: relative; }
+.hm-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .74rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--h-brand); background: rgba(91, 26, 128, .08);
+  border-radius: 999px; padding: 7px 14px; margin-bottom: 20px;
+}
+.hm-h1 {
+  font-size: clamp(2.05rem, 4.6vw, 3.35rem); line-height: 1.06; letter-spacing: -.03em;
+  margin: 0 0 18px; font-weight: 820;
+}
+.hm-h1 em { font-style: normal; color: var(--h-brand); }
+.hm-lead { font-size: clamp(1rem, 1.35vw, 1.12rem); line-height: 1.62; color: var(--h-ink-2); margin: 0 0 26px; max-width: 54ch; }
+.hm-cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.hm-note { display: flex; gap: 16px; flex-wrap: wrap; color: var(--h-muted); font-size: .84rem; }
+.hm-note span { display: inline-flex; align-items: center; gap: 6px; }
+
+.hm-phones { position: relative; display: grid; place-items: center; }
+.hm-badge {
+  position: absolute; z-index: 3; display: flex; align-items: center; gap: 10px;
+  background: #fff; border-radius: 16px; padding: 10px 14px; box-shadow: var(--h-shadow);
+  font-size: .82rem; font-weight: 700;
+}
+.hm-badge.wa { inset-block-start: 8%; inset-inline-end: 2%; }
+.hm-badge.wa i { font-style: normal; }
+.hm-badge.wa small { display: block; font-weight: 600; color: var(--h-muted); font-size: .74rem; }
+.hm-badge.stat { inset-block-end: 6%; inset-inline-start: 0; }
+.hm-badge.stat b { color: var(--h-brand); font-size: 1.05rem; }
+
+/* ---------- Barra de confianza ---------- */
+.hm-stats { border-block: 1px solid var(--h-line); background: #fff; }
+.hm-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; padding: 26px 0; }
+.hm-stat b { display: block; font-size: clamp(1.4rem, 2.4vw, 1.9rem); letter-spacing: -.02em; }
+.hm-stat span { color: var(--h-muted); font-size: .82rem; }
+.hm-stat + .hm-stat { border-inline-start: 1px solid var(--h-line); padding-inline-start: 18px; }
+
+/* ---------- Secciones ---------- */
+.hm-section { padding: clamp(46px, 7vw, 92px) 0; }
+.hm-section.alt { background: #fff; border-block: 1px solid var(--h-line); }
+.hm-head { max-width: 640px; margin-bottom: 38px; }
+.hm-label { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 800; color: var(--h-brand); }
+.hm-h2 { font-size: clamp(1.55rem, 3vw, 2.15rem); line-height: 1.14; letter-spacing: -.02em; margin: 10px 0 12px; font-weight: 800; }
+.hm-sub { color: var(--h-ink-2); line-height: 1.65; margin: 0; }
+.hm-head.center { margin-inline: auto; text-align: center; }
+
+/* Tarjetas de valor */
+.hm-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.hm-card {
+  background: #fff; border: 1px solid var(--h-line); border-radius: var(--h-radius);
+  padding: 26px 24px; box-shadow: 0 2px 10px rgba(24, 16, 48, .04);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.hm-card:hover { transform: translateY(-4px); box-shadow: var(--h-shadow); }
+.hm-ico {
+  width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center;
+  background: rgba(91, 26, 128, .09); font-size: 1.3rem; margin-bottom: 16px;
+}
+.hm-card h3 { margin: 0 0 8px; font-size: 1.05rem; letter-spacing: -.01em; }
+.hm-card p { margin: 0; color: var(--h-ink-2); line-height: 1.6; font-size: .93rem; }
+
+/* Pasos */
+.hm-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; counter-reset: step; }
+.hm-step { position: relative; padding-top: 44px; }
+.hm-step::before {
+  counter-increment: step; content: counter(step, decimal-leading-zero);
+  position: absolute; inset-block-start: 0; inset-inline-start: 0;
+  font-size: 1.5rem; font-weight: 900; color: var(--h-brand); opacity: .5; letter-spacing: -.02em;
+}
+.hm-step::after {
+  content: ''; position: absolute; inset-block-start: 16px; inset-inline-start: 46px; inset-inline-end: -22px;
+  height: 1px; background: var(--h-line);
+}
+.hm-step:last-child::after { display: none; }
+.hm-step h3 { margin: 0 0 8px; font-size: 1.02rem; }
+.hm-step p { margin: 0; color: var(--h-ink-2); line-height: 1.6; font-size: .92rem; }
+
+/* Tipos de negocio */
+.hm-types { display: flex; flex-wrap: wrap; gap: 10px; }
+.hm-type {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #fff; border: 1px solid var(--h-line); border-radius: 999px;
+  padding: 10px 16px; font-size: .88rem; font-weight: 650; color: var(--h-ink);
+  cursor: pointer; transition: border-color .16s, transform .16s, box-shadow .16s;
+}
+.hm-type:hover { border-color: var(--h-brand); color: var(--h-brand); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(24,16,48,.08); }
+.hm-type span { font-size: 1.05rem; }
+
+/* Banda demo */
+.hm-demo { background: linear-gradient(135deg, #1d1030, #3d1055 55%, #5b1a80); color: #fff; border-radius: 28px; padding: clamp(28px, 5vw, 52px); display: grid; grid-template-columns: 1.2fr .8fr; gap: 30px; align-items: center; }
+.hm-demo h2 { margin: 0 0 10px; font-size: clamp(1.4rem, 2.6vw, 2rem); letter-spacing: -.02em; }
+.hm-demo p { margin: 0 0 20px; color: rgba(255,255,255,.82); line-height: 1.6; }
+.hm-demo-list { display: flex; flex-direction: column; gap: 10px; }
+.hm-demo-list span { display: flex; align-items: center; gap: 10px; font-size: .9rem; color: rgba(255,255,255,.9); }
+.hm-demo-list i { font-style: normal; width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,.16); display: grid; place-items: center; font-size: .72rem; }
+
+/* CTA final */
+.hm-final { text-align: center; padding: clamp(48px, 7vw, 90px) 0; }
+.hm-final h2 { font-size: clamp(1.7rem, 3.4vw, 2.5rem); letter-spacing: -.025em; margin: 0 0 12px; }
+.hm-final p { color: var(--h-ink-2); margin: 0 0 24px; }
+
+/* Pie */
+.hm-footer { background: #14121b; color: #cfc9dc; padding: 54px 0 26px; }
+.hm-footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 26px; }
+.hm-footer h5 { color: #fff; font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; margin: 0 0 12px; }
+.hm-footer a { color: #cfc9dc; display: block; padding: 4px 0; font-size: .9rem; }
+.hm-footer a:hover { color: #fff; }
+.hm-footer .hm-logo { color: #fff; margin-bottom: 10px; }
+.hm-footer .hm-logo b { color: #c9a7f2; }
+.hm-footer-bottom { border-top: 1px solid rgba(255,255,255,.1); margin-top: 34px; padding-top: 18px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: .82rem; color: #9b94ad; }
+
+@media (max-width: 960px) {
+  .hm-nav { display: none; }
+  .hm-burger { display: inline-flex; align-items: center; justify-content: center; }
+  .hm-actions .btn { display: none; }
+  .hm-hero-grid { grid-template-columns: 1fr; gap: 34px; }
+  .hm-phones { order: -1; }
+  .hm-cards, .hm-steps { grid-template-columns: 1fr; }
+  .hm-step::after { display: none; }
+  .hm-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .hm-stat + .hm-stat { border-inline-start: 0; padding-inline-start: 0; }
+  .hm-demo { grid-template-columns: 1fr; }
+  .hm-footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  .hm-h1 { font-size: 2rem; }
+  .hm-cta-row .btn { width: 100%; justify-content: center; }
+  .hm-badge.wa { inset-inline-end: -4%; }
+  .hm-badge.stat { inset-inline-start: -4%; }
+  .hm-footer-grid { grid-template-columns: 1fr; }
+}

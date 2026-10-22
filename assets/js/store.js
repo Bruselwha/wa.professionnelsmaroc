@@ -58,6 +58,41 @@
     return m ? m[1] : null;
   }
 
+  // Reintenta una operación descartando las columnas que el servidor no
+  // conoce (esquema sin actualizar). Así se puede guardar igualmente en lugar
+  // de fallar con «No se pudo guardar».
+  function tolerant(run, payload, dropped, depth) {
+    dropped = dropped || [];
+    depth = depth || 0;
+    return run(payload).then(function (r) {
+      if (r.error) {
+        var col = missingColumn(r.error);
+        if (col && Object.prototype.hasOwnProperty.call(payload, col) && depth < 12) {
+          var rest = Object.assign({}, payload);
+          delete rest[col];
+          return tolerant(run, rest, dropped.concat(col), depth + 1);
+        }
+        throw r.error;
+      }
+      if (dropped.length) lastDropped = dropped;
+      return r.data;
+    });
+  }
+
+  function updateRow(table, id, patch) {
+    patch = cleanPatch(patch);
+    return tolerant(function (next) {
+      return sb.from(table).update(next).eq('id', id).select().maybeSingle();
+    }, patch, []);
+  }
+
+  function insertRow(table, row) {
+    row = cleanPatch(row);
+    return tolerant(function (next) {
+      return sb.from(table).insert(next).select().maybeSingle();
+    }, row, []);
+  }
+
   // Almacén demo en localStorage
   var LS = {
     read: function (k, def) {
@@ -334,11 +369,9 @@
         LS.write('categories', cats);
         return Promise.resolve(cat);
       }
-      if (cat.id) {
-        return sb.from('categories').update(cat).eq('id', cat.id).select().maybeSingle().then(function (r) { if (r.error) throw r.error; return r.data; });
-      }
+      if (cat.id) return updateRow('categories', cat.id, cat);
       delete cat.id;
-      return sb.from('categories').insert(cat).select().maybeSingle().then(function (r) { if (r.error) throw r.error; return r.data; });
+      return insertRow('categories', cat);
     },
 
     deleteCategory: function (id) {
@@ -374,15 +407,8 @@
       }
       var payload = Object.assign({}, item);
       delete payload.id;
-      if (item.id) {
-        return sb.from('portfolio').update(payload).eq('id', item.id).select().maybeSingle().then(function (r) {
-          if (r.error) throw r.error; return r.data;
-        });
-      }
-      payload.id = undefined;
-      return sb.from('portfolio').insert(payload).select().maybeSingle().then(function (r) {
-        if (r.error) throw r.error; return r.data;
-      });
+      if (item.id) return updateRow('portfolio', item.id, payload);
+      return insertRow('portfolio', payload);
     },
 
     deletePortfolioItem: function (id) {
@@ -417,11 +443,9 @@
         LS.write('products', arr);
         return Promise.resolve(p);
       }
-      if (p.id) {
-        return sb.from('products').update(p).eq('id', p.id).select().maybeSingle().then(function (r) { if (r.error) throw r.error; return r.data; });
-      }
+      if (p.id) return updateRow('products', p.id, p);
       delete p.id;
-      return sb.from('products').insert(p).select().maybeSingle().then(function (r) { if (r.error) throw r.error; return r.data; });
+      return insertRow('products', p);
     },
 
     deleteProduct: function (id) {
