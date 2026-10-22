@@ -12,8 +12,8 @@
     appName: 'WA Professionnels Maroc',
 
     // --- Supabase (déjalas vacías para MODO DEMO) -------------------------
-    SUPABASE_URL: 'https://veoyprwyvlznsadhlodn.supabase.co',        // p.ej. 'https://xxxxxxxx.supabase.co'
-    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlb3lwcnd5dmx6bnNhZGhsb2RuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1ODc4NzUsImV4cCI6MjEwODE2Mzg3NX0.mOZE57s-qRCvXo2OcVrCYaVb4H3HzEuvqqcqPLP8DFY',   // p.ej. 'eyJhbGciOi...'
+    SUPABASE_URL: 'https://wbmpzbshifrvfyxzediz.supabase.co',        // p.ej. 'https://xxxxxxxx.supabase.co'
+    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXB6YnNoaWZydmZ5eHplZGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMjc1MzQsImV4cCI6MjEwNzkwMzUzNH0.iC8PYTlz6SFtHZ27mB1EFcOrpiwAgwkT4pLmTLmEn9U',   // p.ej. 'eyJhbGciOi...'
 
     // --- Dominio público (solo el host, sin https:// ni barra final) ------
     // Si está vacío se detecta automáticamente del dominio actual.
@@ -24,6 +24,10 @@
     languages: ['es', 'fr', 'ar'],
     defaultCurrency: 'MAD',
     supportWhatsapp: '+212670964030',  // WhatsApp de soporte del producto
+
+    // Traducción automática (botón «Traducir con IA»). MyMemory no necesita
+    // clave; si pones un correo, amplía la cuota diaria anónima.
+    translateEmail: '',
     version: '1.0.0',
     cacheVersion: 'cw-v1',
 

@@ -442,3 +442,49 @@ Botones **Guardar** y **Restaurar original** (vuelve al contenido de fábrica).
 
 173 comprobaciones: 101 jsdom de catálogo/panel (incluye guardar la demo y verla
 reflejada en el catálogo público), 24 de datos y 48 sobre PostgreSQL 16 real.
+
+---
+
+# v21 · Traducción con IA y menú del catálogo
+
+## 1. Traducir con IA
+
+- Nuevo `assets/js/translate.js`: `CW.translate.text()` y `CW.translate.fill()`.
+  Usa la API pública de MyMemory (sin clave, con CORS abierto) y traduce en
+  serie para no saturar. Si algún día quieres un modelo propio, solo hay que
+  sustituir `CW.translate.text`.
+- Botón **✨ Traducir con IA** en la tarjeta «Traducciones» de:
+  - Categoría (crear/editar)
+  - Producto y Servicio
+  - Trabajo del porfolio
+  - Información del negocio
+- **Rellena solo los campos vacíos**: nunca pisa lo que hayas escrito a mano.
+  Avisa de cuántos campos ha completado.
+
+## 2. Traducciones de la demo
+
+- El editor de la demo (Administración → Demo) tiene ahora, para cada entidad,
+  dos campos (FR / AR) con el mismo patrón que el resto del panel:
+  negocio (nombre y descripción), cada categoría, cada artículo (nombre y
+  descripción corta) y cada trabajo del porfolio (título y descripción).
+- Botón **✨ Traducir todo con IA** en la cabecera de la demo: recorre negocio,
+  categorías, artículos y porfolio, y rellena las traducciones vacías.
+- Al guardar se limpian las traducciones vacías para no ensuciar el JSON.
+
+## 3. Menú del catálogo
+
+- El botón de **Asistente** desaparece de la cabecera y del menú móvil: vuelve
+  **💬 WhatsApp** (el asistente sigue disponible en el botón flotante).
+- El filtro de tipo deja de ser un grupo de botones y pasa a ser un
+  **desplegable** con Todos · Productos · Servicios.
+
+## Caché
+
+`CACHE_VERSION` → `cw-v19`; `styles.css` 17, `i18n.js` 16, `dashboard.js` 17,
+`catalog.js` 16, `translate.js` 1 (nuevo).
+
+## Verificación
+
+139 comprobaciones: 115 jsdom de catálogo/panel (incluye la traducción con IA,
+el guardado en la demo y el desplegable de tipo), 24 de datos y 48 sobre
+PostgreSQL 16 real.

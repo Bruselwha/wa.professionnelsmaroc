@@ -667,6 +667,11 @@
       $$('[data-rm]', view).forEach(function (b) { b.addEventListener('click', function () { images.splice(Number(b.dataset.rm), 1); drawImages(); }); });
     }
     drawImages();
+    bindTrAi(view, [
+      { key: 'name', from: '[data-f="name"]' },
+      { key: 'short_desc', from: '[data-f="short_desc"]' },
+      { key: 'description', from: '[data-f="description"]' }
+    ]);
     var backRoute = onServices ? '#services' : '#products';
     $('[data-back]', view).addEventListener('click', function () { location.hash = backRoute; });
     $('[data-back2]', view).addEventListener('click', function () { location.hash = backRoute; });
@@ -724,7 +729,8 @@
   function trCard(item, fields) {
     return '<section class="card tr-card">' +
       '<div class="card-head"><div><span class="kicker">' + t('tr.kicker') + '</span>' +
-      '<h3>' + t('tr.title') + '</h3><p class="muted">' + t('tr.hint') + '</p></div></div>' +
+      '<h3>' + t('tr.title') + '</h3><p class="muted">' + t('tr.hint') + '</p></div>' +
+      '<button type="button" class="btn soft small" data-ai-tr>✨ ' + t('tr.ai') + '</button></div>' +
       '<div class="tr-grid">' + TR_LANGS.map(function (L) {
         return '<div class="tr-col" dir="' + L.dir + '"><h4>' + L.label + '</h4>' +
           fields.map(function (f) {
@@ -736,6 +742,39 @@
           }).join('') +
         '</div>';
       }).join('') + '</div></section>';
+  }
+
+  // Botón «Traducir con IA»: toma el texto base y rellena los campos de
+  // francés y árabe que estén vacíos (lo escrito a mano no se toca).
+  function bindTrAi(view, pairs) {
+    var btn = $('[data-ai-tr]', view);
+    if (!btn || !CW.translate) return;
+    btn.addEventListener('click', function () {
+      var data = pairs.map(function (p) {
+        var el = $(p.from, view);
+        return { key: p.key, text: el ? el.value : '' };
+      }).filter(function (p) { return String(p.text || '').trim(); });
+
+      if (!data.length) { CW.toast(t('tr.ai.empty'), 'warn'); return; }
+
+      var label = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '⏳ ' + t('tr.ai.working');
+
+      CW.translate.fill(data, function (res) {
+        btn.disabled = false;
+        btn.innerHTML = label;
+        var n = 0;
+        ['fr', 'ar'].forEach(function (lang) {
+          Object.keys(res[lang] || {}).forEach(function (k) {
+            var el = $('[data-tr="' + lang + '.' + k + '"]', view);
+            if (el && !el.value.trim()) { el.value = res[lang][k]; n++; }
+          });
+        });
+        if (n) CW.toast(t('tr.ai.done', { n: n }), 'ok');
+        else CW.toast(t('tr.ai.none'), 'warn');
+      });
+    });
   }
 
   // Recoge lo escrito en la tarjeta de traducciones. Lo que se deje vacío no
@@ -832,6 +871,7 @@
       '<div class="form-sticky"><button class="btn ghost" data-back2>' + t('common.cancel') + '</button><button class="btn primary" data-save>✓ ' + t('cat.save') + '</button></div>';
     $('[data-back]', view).addEventListener('click', function () { location.hash = '#categories'; });
     $('[data-back2]', view).addEventListener('click', function () { location.hash = '#categories'; });
+    bindTrAi(view, [{ key: 'name', from: '[data-f="name"]' }, { key: 'alt', from: '[data-f="alt"]' }]);
     $$('[data-kind] button', view).forEach(function (b) { b.addEventListener('click', function () { $$('[data-kind] button', view).forEach(function (x) { x.classList.remove('active'); }); b.classList.add('active'); }); });
     $('[data-cat-img]', view).addEventListener('click', function () {
       openImagePicker(1, function (urls) { if (urls[0]) $('[data-cat-img]', view).innerHTML = '<img src="' + esc(urls[0]) + '">'; view._img = urls[0]; });
@@ -1033,6 +1073,11 @@
       '<div class="form-sticky"><button class="btn ghost" data-back2>' + t('common.cancel') + '</button>' +
       '<button class="btn primary" data-save>✓ ' + t('port.save') + '</button></div>';
 
+    bindTrAi(view, [
+      { key: 'title', from: '[data-f="title"]' },
+      { key: 'description', from: '[data-f="description"]' },
+      { key: 'details', from: '[data-f="details"]' }
+    ]);
     $('[data-back]', view).addEventListener('click', function () { location.hash = '#portfolio'; });
     $('[data-back2]', view).addEventListener('click', function () { location.hash = '#portfolio'; });
     $('[data-item-img]', view).addEventListener('click', function () {
@@ -1403,6 +1448,12 @@
 
     function val(f) { var el = $('[data-f="' + f + '"]', view); return el ? el.value : ''; }
 
+    bindTrAi(view, [
+      { key: 'name', from: '[data-f="name"]' },
+      { key: 'description', from: '[data-f="description"]' },
+      { key: 'hero_title', from: '[data-f="hero_title"]' },
+      { key: 'hero_desc', from: '[data-f="hero_desc"]' }
+    ]);
     if (id === 'brand') {
       $('[data-f="brand_color"]', view).addEventListener('input', function (e) { $('[data-f="brand_hex"]', view).value = e.target.value; });
       $('[data-logo-file]', view).addEventListener('change', function (e) {
@@ -1807,7 +1858,10 @@
   function setPath(obj, path, value) {
     var parts = path.split('.');
     var last = parts.pop();
-    var target = parts.reduce(function (o, k) { return o[k]; }, obj);
+    var target = parts.reduce(function (o, k) {
+      if (o[k] == null || typeof o[k] !== 'object') o[k] = /^\d+$/.test(k) ? [] : {};
+      return o[k];
+    }, obj);
     target[last] = value;
   }
 
@@ -1815,6 +1869,7 @@
     body.innerHTML = '<section class="card"><div class="card-head"><div><h3>' + t('demo.title') + '</h3>' +
       '<p class="muted">' + t('demo.hint') + '</p></div>' +
       '<div class="head-actions"><a class="btn ghost small" href="' + esc(CW.url('catalogo.html') + '?b=demo') + '" target="_blank" rel="noopener">' + t('demo.view') + ' ↗</a>' +
+      '<button class="btn soft small" data-demo-ai>✨ ' + t('demo.ai') + '</button>' +
       '<button class="btn ghost small" data-demo-reset>' + t('demo.reset') + '</button>' +
       '<button class="btn primary small" data-demo-save>' + t('common.save') + '</button></div></div>' +
       '<div data-demo-body><p class="muted">' + t('common.loading') + '</p></div></section>';
@@ -1842,6 +1897,15 @@
       return '<label class="field' + (opts.wide ? ' wide' : '') + '"><span>' + label + '</span>' + ctrl + '</label>';
     }
 
+    // Dos campos (FR / AR) para un campo traducible de la demo.
+    function dtr(base, field, label) {
+      return '<div class="demo-tr"><span>' + esc(label) + '</span>' +
+        ['fr', 'ar'].map(function (L) {
+          var v = getPath(body._demo, base + '.i18n.' + L + '.' + field) || '';
+          return '<input data-d="' + base + '.i18n.' + L + '.' + field + '" value="' + esc(v) + '" placeholder="' + L.toUpperCase() + '" dir="' + (L === 'ar' ? 'rtl' : 'ltr') + '">';
+        }).join('') + '</div>';
+    }
+
     function draw() {
       var d = body._demo;
       var cats = d.cats || [], items = d.products || [], works = d.portfolio || [];
@@ -1858,6 +1922,8 @@
         '</div>' +
         inp('biz.description', t('prod.desc'), { type: 'area', rows: 2 }) +
         inp('biz.hero_desc', t('set.presentation') + ' · ' + t('prod.desc'), { type: 'area', rows: 2 }) +
+        dtr('biz', 'name', t('common.name')) +
+        dtr('biz', 'description', t('prod.desc')) +
         '<div class="demo-grid">' +
           inp('biz.delivery_fee', t('cat.public.fee'), { type: 'number' }) +
           inp('biz.open_time', t('cat.public.date'), { type: 'time' }) +
@@ -1874,7 +1940,7 @@
               '<option value="service"' + (c.kind === 'service' ? ' selected' : '') + '>🔧 ' + t('prod.type.service') + '</option>' +
             '</select>' +
             '<button class="icon-btn" data-del="cats.' + i + '" aria-label="' + t('common.delete') + '">✕</button>' +
-          '</div>';
+            '</div>' + dtr('cats.' + i, 'name', t('common.name'));
         }).join('') || '<p class="muted">—</p>') + '</div>' +
 
         '<h4 class="demo-h">' + t('demo.items') + ' <button class="btn ghost small" data-add="products">+ ' + t('common.add') + '</button></h4>' +
@@ -1898,6 +1964,8 @@
               '</div>' +
               inp('products.' + i + '.short_desc', t('prod.shortdesc')) +
               inp('products.' + i + '.description', t('prod.desc'), { type: 'area', rows: 2 }) +
+              dtr('products.' + i, 'name', t('common.name')) +
+              dtr('products.' + i, 'short_desc', t('prod.shortdesc')) +
             '</div>' +
             '<button class="icon-btn" data-del="products.' + i + '" aria-label="' + t('common.delete') + '">✕</button>' +
           '</div>';
@@ -1912,6 +1980,8 @@
             '<div class="demo-item-body">' +
               inp('portfolio.' + i + '.title', t('common.name')) +
               inp('portfolio.' + i + '.description', t('port.desc'), { type: 'area', rows: 2 }) +
+              dtr('portfolio.' + i, 'title', t('common.name')) +
+              dtr('portfolio.' + i, 'description', t('port.desc')) +
             '</div>' +
             '<button class="icon-btn" data-del="portfolio.' + i + '" aria-label="' + t('common.delete') + '">✕</button>' +
           '</div>';
@@ -1967,9 +2037,29 @@
       });
     }
 
+    // Quita traducciones vacías antes de guardar para no ensuciar el JSON.
+    function pruneI18n(node) {
+      if (!node || typeof node !== 'object') return;
+      Object.keys(node).forEach(function (k) {
+        var v = node[k];
+        if (k === 'i18n' && v && typeof v === 'object') {
+          Object.keys(v).forEach(function (L) {
+            if (!v[L] || typeof v[L] !== 'object') { delete v[L]; return; }
+            Object.keys(v[L]).forEach(function (f) {
+              if (!String(v[L][f] == null ? '' : v[L][f]).trim()) delete v[L][f];
+            });
+            if (!Object.keys(v[L]).length) delete v[L];
+          });
+          if (!Object.keys(v).length) delete node.i18n;
+        } else if (Array.isArray(v)) { v.forEach(pruneI18n); }
+        else if (v && typeof v === 'object') pruneI18n(v);
+      });
+    }
+
     $('[data-demo-save]', body).addEventListener('click', function () {
       var btn = $('[data-demo-save]', body);
       btn.disabled = true;
+      pruneI18n(body._demo);
       CW.store.saveSiteSettings('demo_catalog', body._demo).then(function () {
         btn.disabled = false;
         CW.toast(t('common.save'), 'ok');
@@ -1978,6 +2068,57 @@
         console.warn('[CW] No se pudo guardar la demo:', err);
         CW.toast(t('set.save.error'), 'error');
       });
+    });
+
+    $('[data-demo-ai]', body).addEventListener('click', function () {
+      var btn = $('[data-demo-ai]', body);
+      var d = body._demo;
+
+      // Todo el texto base que se puede traducir, con su ruta exacta.
+      var list = [];
+      function add(base, field, text) {
+        var v = String(text == null ? '' : text).trim();
+        if (!v) return;
+        ['fr', 'ar'].forEach(function (L) { list.push({ base: base, field: field, lang: L, text: v }); });
+      }
+      add('biz', 'name', d.biz.name);
+      add('biz', 'description', d.biz.description);
+      add('biz', 'hero_title', d.biz.hero_title);
+      add('biz', 'hero_desc', d.biz.hero_desc);
+      (d.cats || []).forEach(function (c, i) { add('cats.' + i, 'name', c.name); });
+      (d.products || []).forEach(function (p, i) {
+        add('products.' + i, 'name', p.name);
+        add('products.' + i, 'short_desc', p.short_desc);
+        add('products.' + i, 'description', p.description);
+      });
+      (d.portfolio || []).forEach(function (w, i) {
+        add('portfolio.' + i, 'title', w.title);
+        add('portfolio.' + i, 'description', w.description);
+      });
+
+      if (!list.length) { CW.toast(t('tr.ai.empty'), 'warn'); return; }
+
+      var total = list.length, i = 0, filled = 0;
+      btn.disabled = true;
+      btn.innerHTML = '⏳ 0/' + total;
+
+      (function next() {
+        if (i >= list.length) {
+          btn.disabled = false;
+          btn.innerHTML = '✨ ' + t('demo.ai');
+          draw();
+          CW.toast(filled ? t('tr.ai.done', { n: filled }) : t('tr.ai.none'), filled ? 'ok' : 'warn');
+          return;
+        }
+        var job = list[i++];
+        var path = job.base + '.i18n.' + job.lang + '.' + job.field;
+        if (String(getPath(body._demo, path) || '').trim()) return next(); // no pisa lo escrito
+        CW.translate.text(job.text, job.lang, CW.config.defaultLang || 'es').then(function (out) {
+          if (out) { setPath(body._demo, path, out); filled++; }
+          btn.innerHTML = '⏳ ' + i + '/' + total;
+          next();
+        }).catch(function () { btn.innerHTML = '⏳ ' + i + '/' + total; next(); });
+      })();
     });
 
     $('[data-demo-reset]', body).addEventListener('click', function () {

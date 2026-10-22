@@ -76,6 +76,15 @@
       '<div><b>' + esc(CW.tx(b, 'name')) + '</b>' + (CW.tx(b, 'description') ? '<small>' + esc(CW.tx(b, 'description')) + '</small>' : '') + '</div>';
 
     // Enlace al porfolio: solo si el negocio ha publicado trabajos.
+    $$('[data-wa-header]').forEach(function (wa) {
+      if (b.whatsapp) {
+        wa.hidden = false;
+        wa.href = CW.api.waLink(b.whatsapp, 'Hola ' + CW.tx(b, 'name') + ', quiero hacer un pedido.');
+      } else {
+        wa.hidden = true;
+      }
+    });
+
     $$('[data-pf-link]').forEach(function (pf) {
       if (S.portfolio.length) {
         pf.hidden = false;
@@ -169,11 +178,11 @@
     }
     var active = (showTypes && S.filterType !== 'all') || S.filterCat || S.q;
     return '<div class="filter-inner" data-filters>' +
-      (showTypes ? '<div class="segmented" data-ftype>' +
-        '<button data-ft="all" class="' + (S.filterType === 'all' ? 'active' : '') + '">' + t('common.all') + '</button>' +
-        '<button data-ft="product" class="' + (S.filterType === 'product' ? 'active' : '') + '">' + t('cat.public.products') + '</button>' +
-        '<button data-ft="service" class="' + (S.filterType === 'service' ? 'active' : '') + '">' + t('cat.public.services') + '</button>' +
-      '</div>' : '') +
+      (showTypes ? '<select class="cat-type" data-ftype aria-label="' + t('prod.type') + '">' +
+        '<option value="all"' + (S.filterType === 'all' ? ' selected' : '') + '>' + t('common.all') + '</option>' +
+        '<option value="product"' + (S.filterType === 'product' ? ' selected' : '') + '>' + t('cat.public.products') + '</option>' +
+        '<option value="service"' + (S.filterType === 'service' ? ' selected' : '') + '>' + t('cat.public.services') + '</option>' +
+      '</select>' : '') +
       (cats.length ? '<select data-fcat aria-label="' + t('common.category') + '">' + catOpts + '</select>' : '') +
       '<input class="search" data-fq type="search" aria-label="' + t('cat.public.search') + '" placeholder="' + t('cat.public.search') + '" value="' + esc(S.q) + '">' +
       (active ? '<button class="btn ghost small" data-fclear>' + t('cat.public.clear') + '</button>' : '') +
@@ -181,7 +190,8 @@
   }
 
   function bindFilters() {
-    $$('[data-ft]').forEach(function (b) { b.addEventListener('click', function () { S.filterType = b.dataset.ft; S.filterCat = ''; rerenderFilters(); }); });
+    var ft = $('[data-ftype]');
+    if (ft) ft.addEventListener('change', function () { S.filterType = ft.value; S.filterCat = ''; rerenderFilters(); });
     var fc = $('[data-fcat]'); if (fc) fc.addEventListener('change', function () { S.filterCat = fc.value; drawGrid(); });
     var q = $('[data-fq]'); if (q) q.addEventListener('input', function () { S.q = q.value; drawGrid(); });
     var cl = $('[data-fclear]'); if (cl) cl.addEventListener('click', function () { S.filterType = 'all'; S.filterCat = ''; S.q = ''; rerenderFilters(); });
@@ -672,13 +682,7 @@
       });
     }
 
-    // Botón «Asistente» de la cabecera y del menú móvil.
-    $$('[data-asst-open]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        if (header) header.classList.remove('menu-open');
-        if (CW.assistant && CW.assistant.open) CW.assistant.open();
-      });
-    });
+    // El asistente sigue disponible en el botón flotante.
     window.addEventListener('cw:lang', function () { if (S.biz) render(); });
     load().then(render).catch(function (e) { console.error(e); render(); });
   });
