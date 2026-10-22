@@ -353,3 +353,92 @@ comprobaciones:
 
 145 comprobaciones: 77 jsdom catálogo/panel, 24 jsdom datos y 44 sobre
 PostgreSQL 16 real.
+
+---
+
+# v19 · Contenido multiidioma
+
+Cada negocio, categoría, artículo y trabajo del porfolio puede tener su versión
+en **francés** y **árabe**. El español (o el idioma en que se escribe) sigue
+siendo el idioma base.
+
+## Cómo funciona
+
+- Nueva columna `i18n` (jsonb) en `businesses`, `categories`, `products` y
+  `portfolio`, con esta forma:
+
+      { "fr": { "name": "...", "description": "..." }, "ar": { "name": "..." } }
+
+- Nuevo helper `CW.tx(fila, campo)`: devuelve la traducción del idioma activo y,
+  si no existe o está vacía, **cae al idioma base**. Nunca deja un hueco.
+- El catálogo público, la ficha de cada artículo, el carrito, el mensaje de
+  WhatsApp, la reserva de servicios y el porfolio usan ya ese helper, así que
+  todo el contenido cambia al pulsar la bandera.
+
+## Editor en el panel
+
+- **Negocio** → Ajustes → Información del negocio: nombre, descripción, título
+  y descripción del encabezado, en francés y árabe.
+- **Categoría** → nombre y texto alternativo.
+- **Producto / Servicio** → nombre, descripción corta y descripción.
+- **Porfolio** → título, descripción y detalles.
+
+Cada ficha muestra una tarjeta «Traducciones» con una columna por idioma (la
+árabe con `dir="rtl"`). Lo que se deje vacío no se guarda y se muestra el texto
+base. El buscador del catálogo también encuentra por el nombre traducido.
+
+## SQL
+
+    supabase/schema.sql                     (actualizado)
+    supabase/actualizacion-multidioma.sql   (para bases existentes)
+
+## Caché
+
+`CACHE_VERSION` → `cw-v17`; `styles.css` 15, `i18n.js` 14, `common.js` 11,
+`catalog.js` 14, `portfolio.js` 3, `dashboard.js` 15.
+
+## Verificación
+
+162 comprobaciones: 90 jsdom de catálogo/panel (incluye traducciones y respaldo),
+24 de datos y 48 sobre PostgreSQL 16 real.
+
+---
+
+# v20 · Editar la demo desde el panel
+
+La página de demostración (`catalogo.html?b=demo` y `porfolio.html?b=demo`) deja
+de estar en el código: su contenido se guarda en `site_settings.demo_catalog` y
+se edita desde el panel.
+
+## Dónde
+
+**Administración → Demo** (nueva pestaña, solo super administradores). Desde ahí:
+
+- **Negocio:** nombre, descripción, WhatsApp, moneda, color de marca, título y
+  descripción del encabezado, plazo de entrega, tarifa, horario e intervalo de
+  citas.
+- **Categorías:** añadir, renombrar, cambiar entre producto/servicio y eliminar.
+- **Artículos y servicios:** imagen (biblioteca o URL), nombre, precio, precio
+  de oferta, descripción corta, descripción, categoría y tipo. Añadir y eliminar.
+- **Porfolio:** imagen, título y descripción de cada trabajo. Añadir y eliminar.
+
+Botones **Guardar** y **Restaurar original** (vuelve al contenido de fábrica).
+
+## Cómo funciona
+
+- `CW.demoCatalog()` define el contenido por defecto; `CW.demoCatalogMerged()`
+  mezcla lo guardado encima, así que si un campo falta se usa el original.
+- El catálogo y el porfolio públicos leen `site_settings.demo_catalog` cuando
+  entran en modo demo. Sin cambios, se ven exactamente como antes.
+- No hace falta SQL nuevo: usa la tabla `site_settings` que ya existe (lectura
+  pública, escritura solo para el super administrador).
+
+## Caché
+
+`CACHE_VERSION` → `cw-v18`; `styles.css` 16, `i18n.js` 15, `common.js` 12,
+`catalog.js` 15, `portfolio.js` 4, `dashboard.js` 16.
+
+## Verificación
+
+173 comprobaciones: 101 jsdom de catálogo/panel (incluye guardar la demo y verla
+reflejada en el catálogo público), 24 de datos y 48 sobre PostgreSQL 16 real.

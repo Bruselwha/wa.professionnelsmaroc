@@ -208,6 +208,70 @@
       });
     },
 
+    // ---- Catálogo de demostración ---------------------------------------
+    // Datos por defecto de `catalogo.html?b=demo`. Se pueden editar desde
+    // Administración → Demo; lo guardado se superpone a estos valores.
+    demoCatalog: function () {
+      return {
+        biz: {
+          id: 'demo', name: 'Marmol', slug: 'demo',
+          description: 'Piedra natural para cocinas y baños, con entrega a domicilio.',
+          whatsapp: '212600112233', country: 'MA', currency: 'MAD', brand_color: '#5B1A80',
+          logo_url: '', hero_enabled: true, hero_title: 'Todo para tu hogar',
+          hero_desc: 'Productos y servicios seleccionados para ti.', hero_image: '',
+          delivery: 'custom', delivery_fee: 25, delivery_time: '24-48 h',
+          payments: ['Efectivo', 'Transferencia bancaria'],
+          open_time: '09:00', close_time: '18:00', slot_minutes: 30,
+          work_days: [1, 2, 3, 4, 5, 6], published: true
+        },
+        cats: [
+          { id: 'c1', name: 'Ropa', slug: 'ropa', kind: 'product', sort_order: 1, active: true },
+          { id: 'c2', name: 'Abarrotes', slug: 'abarrotes', kind: 'product', sort_order: 2, active: true },
+          { id: 'c3', name: 'Cortes', slug: 'cortes', kind: 'service', sort_order: 3, active: true },
+          { id: 'c4', name: 'Reparaciones', slug: 'reparaciones', kind: 'service', sort_order: 4, active: true }
+        ],
+        products: [
+          { id: 'p1', category_id: 'c1', name: 'Camiseta', description: 'Camiseta 100% algodón peinado. Disponible en varias tallas.', short_desc: 'Algodón peinado, varias tallas', price: 100, promo_price: 60, images: ['assets/demo/camiseta.svg'], kind: 'product', active: true, sort_order: 1 },
+          { id: 'p2', category_id: 'c2', name: 'Arroz extra 5 kg', description: 'Arroz de grano largo, ideal para el día a día.', short_desc: 'Grano largo, saco de 5 kg', price: 45, images: ['assets/demo/arroz.svg'], kind: 'product', active: true, sort_order: 2 },
+          { id: 'p3', category_id: 'c3', name: 'Corte de pelo', description: 'Corte clásico con lavado y peinado.', price: 0, images: ['assets/demo/corte.svg'], kind: 'service', duration: '45 minutos', modality: 'En el local', bookable: true, active: true, sort_order: 3 },
+          { id: 'p4', category_id: 'c4', name: 'Reparación de electrodoméstico', description: 'Diagnóstico y reparación a domicilio.', price: 150, images: ['assets/demo/reparacion.svg'], kind: 'service', duration: '2 horas', modality: 'A domicilio', bookable: false, active: true, sort_order: 4 }
+        ],
+        portfolio: [
+          { id: 'w1', title: 'Encimera de cocina', description: 'Mármol blanco pulido con canto recto y fregadero integrado.', details: 'Material: mármol blanco\nMedidas: 3,2 m\nAcabado: pulido', image_url: 'assets/demo/camiseta.svg', sort_order: 1, active: true },
+          { id: 'w2', title: 'Baño completo', description: 'Revestimiento y lavabo a medida en piedra natural.', details: 'Lavabo a medida\nRevestimiento completo', image_url: 'assets/demo/arroz.svg', sort_order: 2, active: true },
+          { id: 'w3', title: 'Escaleras', description: 'Peldaños macizos con acabado antideslizante.', details: 'Peldaño macizo\nAntideslizante', image_url: 'assets/demo/corte.svg', sort_order: 3, active: true },
+          { id: 'w4', title: 'Restauración', description: 'Recuperación de una mesa antigua de mármol.', details: 'Mesa restaurada\nPulido fino', image_url: 'assets/demo/reparacion.svg', sort_order: 4, active: true }
+        ]
+      };
+    },
+
+    // Mezcla lo guardado en site_settings.demo_catalog con los valores por
+    // defecto (lo guardado manda; lo que falte se rellena con el original).
+    demoCatalogMerged: function (saved) {
+      var base = CWU.demoCatalog();
+      if (!saved || typeof saved !== 'object') return base;
+      var out = {
+        biz: Object.assign({}, base.biz, saved.biz || {}),
+        cats: Array.isArray(saved.cats) ? saved.cats : base.cats,
+        products: Array.isArray(saved.products) ? saved.products : base.products,
+        portfolio: Array.isArray(saved.portfolio) ? saved.portfolio : base.portfolio
+      };
+      return out;
+    },
+
+    // ---- Contenido traducible -------------------------------------------
+    // Texto de un contenido del usuario (negocio, categoría, artículo,
+    // trabajo del porfolio) en el idioma activo. Si no hay traducción, cae
+    // al idioma base, que es el que se escribe en el panel.
+    tx: function (row, field) {
+      if (!row) return '';
+      var lang = (CW.i18n && CW.i18n.lang) || 'es';
+      var pack = row.i18n && row.i18n[lang];
+      var v = pack && pack[field];
+      if (v != null && String(v).trim() !== '') return v;
+      return row[field] != null ? row[field] : '';
+    },
+
     // ---- UI: toast -----------------------------------------------------
     toast: function (msg, type) {
       var t = CWU.el('div', { class: 'cw-toast ' + (type || '') }, CWU.esc(msg));
@@ -358,6 +422,9 @@
   CW.el = CWU.el;
   CW.money = CWU.money;
   CW.toast = CWU.toast;
+  CW.tx = CWU.tx;
+  CW.demoCatalog = CWU.demoCatalog;
+  CW.demoCatalogMerged = CWU.demoCatalogMerged;
   CW.modal = CWU.modal;
   CW.confirm = CWU.confirm;
   CW.t = CWU.t;

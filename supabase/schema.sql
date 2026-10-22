@@ -64,6 +64,7 @@ create table if not exists public.businesses (
   slot_minutes    integer not null default 30,
   work_days       jsonb not null default '[1,2,3,4,5,6]'::jsonb,
   onboarded       boolean not null default false,
+  i18n            jsonb not null default '{}'::jsonb,
   created_at      timestamptz not null default now()
 );
 create index if not exists businesses_owner_idx on public.businesses (owner_id);
@@ -78,6 +79,7 @@ create table if not exists public.categories (
   alt         text,
   kind        text not null default 'product',   -- 'product' | 'service'
   active      boolean not null default true,
+  i18n        jsonb not null default '{}'::jsonb,
   created_at  timestamptz not null default now()
 );
 create index if not exists categories_business_idx on public.categories (business_id, sort_order);
@@ -101,6 +103,7 @@ create table if not exists public.products (
   modality    text,
   bookable    boolean not null default false,
   requirements text,
+  i18n        jsonb not null default '{}'::jsonb,
   created_at  timestamptz not null default now()
 );
 create index if not exists products_business_idx on public.products (business_id, sort_order);
@@ -147,6 +150,7 @@ create table if not exists public.portfolio (
   work_date   text,
   sort_order  integer not null default 0,
   active      boolean not null default true,
+  i18n        jsonb not null default '{}'::jsonb,
   created_at  timestamptz not null default now()
 );
 create index if not exists portfolio_business_idx on public.portfolio (business_id, sort_order);

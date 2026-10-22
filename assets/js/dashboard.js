@@ -651,6 +651,11 @@
             '<p class="muted">' + t('prod.price.title') + '</p></div>' +
         '</aside>' +
       '</div>' +
+      trCard(p, [
+        { key: 'name', label: t('common.name') },
+        { key: 'short_desc', label: t('prod.shortdesc') },
+        { key: 'description', label: t('prod.desc'), type: 'area', rows: 4 }
+      ]) +
       '<div class="form-sticky"><button class="btn ghost" data-back2>' + t('common.cancel') + '</button>' +
       '<button class="btn primary" data-save>✓ ' + t('prod.save') + '</button></div>';
 
@@ -693,6 +698,7 @@
         bookable: kind === 'service' ? !!$('[data-f="bookable"]', view).checked : false,
         requirements: kind === 'service' ? val('requirements') : ''
       };
+      obj.i18n = trCollect(view, p);
       if (!obj.name) { CW.toast(t('common.required')); return; }
       CW.store.saveProduct(obj).then(function () {
         CW.toast(t('common.save'), 'ok');
@@ -703,6 +709,53 @@
         CW.toast(t('set.save.error'), 'error');
       });
     });
+  }
+
+  // ---------------------------------------------------------------------
+  // Traducciones del contenido (francés y árabe; el español es el base)
+  // ---------------------------------------------------------------------
+  var TR_LANGS = [{ code: 'fr', label: 'Français', dir: 'ltr' }, { code: 'ar', label: 'العربية', dir: 'rtl' }];
+
+  function trGet(item, lang, field) {
+    var pack = item && item.i18n && item.i18n[lang];
+    return (pack && pack[field]) || '';
+  }
+
+  function trCard(item, fields) {
+    return '<section class="card tr-card">' +
+      '<div class="card-head"><div><span class="kicker">' + t('tr.kicker') + '</span>' +
+      '<h3>' + t('tr.title') + '</h3><p class="muted">' + t('tr.hint') + '</p></div></div>' +
+      '<div class="tr-grid">' + TR_LANGS.map(function (L) {
+        return '<div class="tr-col" dir="' + L.dir + '"><h4>' + L.label + '</h4>' +
+          fields.map(function (f) {
+            var val = trGet(item, L.code, f.key);
+            var input = f.type === 'area'
+              ? '<textarea rows="' + (f.rows || 3) + '" data-tr="' + L.code + '.' + f.key + '">' + esc(val) + '</textarea>'
+              : '<input data-tr="' + L.code + '.' + f.key + '" value="' + esc(val) + '">';
+            return '<label class="field"><span>' + esc(f.label) + '</span>' + input + '</label>';
+          }).join('') +
+        '</div>';
+      }).join('') + '</div></section>';
+  }
+
+  // Recoge lo escrito en la tarjeta de traducciones. Lo que se deje vacío no
+  // se guarda y el catálogo usará el texto del idioma base.
+  function trCollect(view, base) {
+    var out = JSON.parse(JSON.stringify((base && base.i18n) || {}));
+    $$('[data-tr]', view).forEach(function (el) {
+      var p = el.dataset.tr.split('.');
+      var lang = p[0], field = p[1];
+      var v = String(el.value || '').trim();
+      out[lang] = out[lang] || {};
+      if (v) out[lang][field] = v; else delete out[lang][field];
+    });
+    Object.keys(out).forEach(function (l) { if (!Object.keys(out[l]).length) delete out[l]; });
+    return out;
+  }
+
+  function trPatch(view, base, patch) {
+    if ($('[data-tr]', view)) patch.i18n = trCollect(view, base);
+    return patch;
   }
 
   function card(title, desc, body) {
@@ -775,6 +828,7 @@
       card(t('cat.image'), t('cat.alt'),
         field('', '<div class="img-slot filled" data-cat-img style="max-width:220px">' + (c.image_url ? '<img src="' + esc(c.image_url) + '">' : '<span>+</span>') + '</div>') +
         field(t('cat.alt'), '<input data-f="alt" value="' + esc(c.alt || '') + '">')) +
+      trCard(c, [{ key: 'name', label: t('common.name') }, { key: 'alt', label: t('cat.alt') }]) +
       '<div class="form-sticky"><button class="btn ghost" data-back2>' + t('common.cancel') + '</button><button class="btn primary" data-save>✓ ' + t('cat.save') + '</button></div>';
     $('[data-back]', view).addEventListener('click', function () { location.hash = '#categories'; });
     $('[data-back2]', view).addEventListener('click', function () { location.hash = '#categories'; });
@@ -791,6 +845,7 @@
         image_url: view._img || c.image_url, kind: $('[data-kind] button.active', view).dataset.k,
         active: c.active !== false
       };
+      obj.i18n = trCollect(view, c);
       if (!obj.name) { CW.toast(t('common.required')); return; }
       CW.store.saveCategory(obj).then(function () { CW.toast(t('common.save')); location.hash = '#categories'; loadAll().then(route); });
     });
@@ -965,6 +1020,11 @@
         '</div>' +
         field(t('port.place'), '<input data-f="place" value="' + esc(it.place || '') + '">')
       ) +
+      trCard(it, [
+        { key: 'title', label: t('common.name') },
+        { key: 'description', label: t('port.desc'), type: 'area', rows: 3 },
+        { key: 'details', label: t('port.details'), type: 'area', rows: 4 }
+      ]) +
       card(t('port.image'), '',
         '<div class="img-slot ' + (it.image_url ? 'filled' : '') + '" data-item-img style="max-width:280px">' +
           (it.image_url ? '<img src="' + esc(it.image_url) + '">' : '<span>+</span>') + '</div>' +
@@ -1001,6 +1061,7 @@
         sort_order: editing ? Number(it.sort_order || 0) : state.portfolio.length,
         active: $('[data-f="active"]', view).checked
       };
+      obj.i18n = trCollect(view, it);
       var btns = $$('[data-save]', view);
       btns.forEach(function (b) { b.disabled = true; });
       CW.store.savePortfolioItem(obj).then(function () {
@@ -1318,6 +1379,15 @@
         '</div>';
     }
 
+    if (id === 'info') {
+      body += trCard(b, [
+        { key: 'name', label: t('login.business') },
+        { key: 'description', label: t('prod.desc'), type: 'area', rows: 3 },
+        { key: 'hero_title', label: t('set.presentation') },
+        { key: 'hero_desc', label: t('prod.desc'), type: 'area', rows: 2 }
+      ]);
+    }
+
     var hero = SET_HERO[id] || [title, ''];
     view.innerHTML =
       '<div class="crumb-mini"><span>' + t('set.title') + '</span> / <span>' + esc(hero[0]) + '</span></div>' +
@@ -1476,6 +1546,7 @@
       saveBtns.forEach(function (x) { x.disabled = true; x.classList.add('is-saving'); });
       function release() { saveBtns.forEach(function (x) { x.disabled = false; x.classList.remove('is-saving'); }); }
 
+      patch = trPatch(view, b, patch);
       CW.store.saveBusiness(b.id, patch).then(function (nb) {
         state.biz = nb || Object.assign({}, b, patch);
         renderBizChip();
@@ -1555,8 +1626,8 @@
   // ADMINISTRACIÓN + COBERTURA
   // ---------------------------------------------------------------------
   function renderAdmin(view) {
-    var tabs = ['accounts', 'coverage', 'appearance', 'metrics', 'superadmins', 'audit'];
-    var TAB_LABEL = { accounts: 'adm.accounts', coverage: 'adm.coverage', appearance: 'adm.appearance', metrics: 'adm.metrics', superadmins: 'adm.superadmins', audit: 'adm.audit' };
+    var tabs = ['accounts', 'coverage', 'appearance', 'demo', 'metrics', 'superadmins', 'audit'];
+    var TAB_LABEL = { accounts: 'adm.accounts', coverage: 'adm.coverage', appearance: 'adm.appearance', demo: 'adm.demo', metrics: 'adm.metrics', superadmins: 'adm.superadmins', audit: 'adm.audit' };
     view.innerHTML = '<div class="view-head"><div><h1>🛡️ ' + t('adm.title') + '</h1><p class="muted">' + t('adm.sub') + '</p></div></div>' +
       '<div class="segmented tabs" data-atab>' + tabs.map(function (x) {
         return '<button data-at="' + x + '" class="' + (x === 'accounts' ? 'active' : '') + '">' + t(TAB_LABEL[x]) + '</button>';
@@ -1566,6 +1637,7 @@
       if (tab === 'accounts') return adminAccounts(body);
       if (tab === 'coverage') return adminCoverage(body);
       if (tab === 'appearance') return adminAppearance(body);
+      if (tab === 'demo') return adminDemo(body);
       if (tab === 'metrics') return adminMetrics(body);
       if (tab === 'superadmins') return adminSuperadmins(body);
       if (tab === 'audit') return adminAudit(body);
@@ -1723,6 +1795,199 @@
       CW.store.saveSiteSettings('home_images', body._imgs).then(function () {
         CW.toast(t('common.save'));
       }).catch(function () { CW.toast('No se pudo guardar (¿ejecutaste actualizacion.sql?)'); });
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // ADMINISTRACIÓN · Contenido de la página de demostración
+  // ---------------------------------------------------------------------
+  function getPath(obj, path) {
+    return path.split('.').reduce(function (o, k) { return o == null ? undefined : o[k]; }, obj);
+  }
+  function setPath(obj, path, value) {
+    var parts = path.split('.');
+    var last = parts.pop();
+    var target = parts.reduce(function (o, k) { return o[k]; }, obj);
+    target[last] = value;
+  }
+
+  function adminDemo(body) {
+    body.innerHTML = '<section class="card"><div class="card-head"><div><h3>' + t('demo.title') + '</h3>' +
+      '<p class="muted">' + t('demo.hint') + '</p></div>' +
+      '<div class="head-actions"><a class="btn ghost small" href="' + esc(CW.url('catalogo.html') + '?b=demo') + '" target="_blank" rel="noopener">' + t('demo.view') + ' ↗</a>' +
+      '<button class="btn ghost small" data-demo-reset>' + t('demo.reset') + '</button>' +
+      '<button class="btn primary small" data-demo-save>' + t('common.save') + '</button></div></div>' +
+      '<div data-demo-body><p class="muted">' + t('common.loading') + '</p></div></section>';
+
+    CW.store.getSiteSettings().then(function (s) {
+      body._demo = CW.demoCatalogMerged(s && s.demo_catalog);
+      draw();
+    });
+
+    function inp(path, label, opts) {
+      opts = opts || {};
+      var v = getPath(body._demo, path);
+      var ctrl;
+      if (opts.type === 'area') {
+        ctrl = '<textarea rows="' + (opts.rows || 2) + '" data-d="' + path + '">' + esc(v || '') + '</textarea>';
+      } else if (opts.type === 'select') {
+        ctrl = '<select data-d="' + path + '">' + opts.options.map(function (o) {
+          return '<option value="' + esc(o.v) + '"' + (String(o.v) === String(v) ? ' selected' : '') + '>' + esc(o.label) + '</option>';
+        }).join('') + '</select>';
+      } else if (opts.type === 'color') {
+        ctrl = '<input type="color" data-d="' + path + '" value="' + esc(v || '#5B1A80') + '">';
+      } else {
+        ctrl = '<input type="' + (opts.type || 'text') + '" data-d="' + path + '" value="' + esc(v == null ? '' : v) + '">';
+      }
+      return '<label class="field' + (opts.wide ? ' wide' : '') + '"><span>' + label + '</span>' + ctrl + '</label>';
+    }
+
+    function draw() {
+      var d = body._demo;
+      var cats = d.cats || [], items = d.products || [], works = d.portfolio || [];
+
+      $('[data-demo-body]', body).innerHTML =
+        '<h4 class="demo-h">' + t('demo.business') + '</h4>' +
+        '<div class="demo-grid">' +
+          inp('biz.name', t('login.business')) +
+          inp('biz.whatsapp', t('common.phone')) +
+          inp('biz.currency', t('set.currency')) +
+          inp('biz.brand_color', t('set.brand'), { type: 'color' }) +
+          inp('biz.hero_title', t('set.presentation')) +
+          inp('biz.delivery_time', t('cat.public.delivery')) +
+        '</div>' +
+        inp('biz.description', t('prod.desc'), { type: 'area', rows: 2 }) +
+        inp('biz.hero_desc', t('set.presentation') + ' · ' + t('prod.desc'), { type: 'area', rows: 2 }) +
+        '<div class="demo-grid">' +
+          inp('biz.delivery_fee', t('cat.public.fee'), { type: 'number' }) +
+          inp('biz.open_time', t('cat.public.date'), { type: 'time' }) +
+          inp('biz.close_time', t('cat.public.time'), { type: 'time' }) +
+          inp('biz.slot_minutes', t('cat.public.appt'), { type: 'number' }) +
+        '</div>' +
+
+        '<h4 class="demo-h">' + t('demo.cats') + ' <button class="btn ghost small" data-add="cats">+ ' + t('common.add') + '</button></h4>' +
+        '<div class="demo-rows">' + (cats.map(function (c, i) {
+          return '<div class="demo-row">' +
+            '<input data-d="cats.' + i + '.name" value="' + esc(c.name) + '" placeholder="' + t('common.name') + '">' +
+            '<select data-d="cats.' + i + '.kind">' +
+              '<option value="product"' + (c.kind !== 'service' ? ' selected' : '') + '>📦 ' + t('prod.type.product') + '</option>' +
+              '<option value="service"' + (c.kind === 'service' ? ' selected' : '') + '>🔧 ' + t('prod.type.service') + '</option>' +
+            '</select>' +
+            '<button class="icon-btn" data-del="cats.' + i + '" aria-label="' + t('common.delete') + '">✕</button>' +
+          '</div>';
+        }).join('') || '<p class="muted">—</p>') + '</div>' +
+
+        '<h4 class="demo-h">' + t('demo.items') + ' <button class="btn ghost small" data-add="products">+ ' + t('common.add') + '</button></h4>' +
+        '<div class="demo-rows">' + (items.map(function (p, i) {
+          var img = (p.images && p.images[0]) || '';
+          return '<div class="demo-item">' +
+            '<div class="demo-thumb' + (img ? ' has' : '') + '" data-demo-img="products.' + i + '.images.0">' +
+              (img ? '<img src="' + esc(img) + '" alt="">' : '<span>+</span>') + '</div>' +
+            '<div class="demo-item-body">' +
+              '<div class="demo-grid tight">' +
+                inp('products.' + i + '.name', t('common.name')) +
+                inp('products.' + i + '.price', t('common.price'), { type: 'number' }) +
+                inp('products.' + i + '.promo_price', t('prod.promo'), { type: 'number' }) +
+                '<label class="field"><span>' + t('common.category') + '</span><select data-d="products.' + i + '.category_id">' +
+                  cats.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === p.category_id ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') +
+                '</select></label>' +
+                '<label class="field"><span>' + t('prod.type') + '</span><select data-d="products.' + i + '.kind">' +
+                  '<option value="product"' + (p.kind !== 'service' ? ' selected' : '') + '>📦 ' + t('prod.type.product') + '</option>' +
+                  '<option value="service"' + (p.kind === 'service' ? ' selected' : '') + '>🔧 ' + t('prod.type.service') + '</option>' +
+                '</select></label>' +
+              '</div>' +
+              inp('products.' + i + '.short_desc', t('prod.shortdesc')) +
+              inp('products.' + i + '.description', t('prod.desc'), { type: 'area', rows: 2 }) +
+            '</div>' +
+            '<button class="icon-btn" data-del="products.' + i + '" aria-label="' + t('common.delete') + '">✕</button>' +
+          '</div>';
+        }).join('') || '<p class="muted">—</p>') + '</div>' +
+
+        '<h4 class="demo-h">' + t('demo.portfolio') + ' <button class="btn ghost small" data-add="portfolio">+ ' + t('common.add') + '</button></h4>' +
+        '<div class="demo-rows">' + (works.map(function (it, i) {
+          var img = it.image_url || '';
+          return '<div class="demo-item">' +
+            '<div class="demo-thumb' + (img ? ' has' : '') + '" data-demo-img="portfolio.' + i + '.image_url">' +
+              (img ? '<img src="' + esc(img) + '" alt="">' : '<span>+</span>') + '</div>' +
+            '<div class="demo-item-body">' +
+              inp('portfolio.' + i + '.title', t('common.name')) +
+              inp('portfolio.' + i + '.description', t('port.desc'), { type: 'area', rows: 2 }) +
+            '</div>' +
+            '<button class="icon-btn" data-del="portfolio.' + i + '" aria-label="' + t('common.delete') + '">✕</button>' +
+          '</div>';
+        }).join('') || '<p class="muted">—</p>') + '</div>' +
+
+        '<p class="muted demo-note">' + t('demo.note') + '</p>';
+
+      bind();
+    }
+
+    function bind() {
+      // Escritura en cualquier campo
+      $$('[data-d]', body).forEach(function (el) {
+        var ev = el.tagName === 'SELECT' || el.type === 'color' ? 'change' : 'input';
+        el.addEventListener(ev, function () {
+          var v = el.type === 'number' ? Number(el.value || 0) : el.value;
+          setPath(body._demo, el.dataset.d, v);
+        });
+      });
+      // Imágenes: elegir de la biblioteca
+      $$('[data-demo-img]', body).forEach(function (el) {
+        el.addEventListener('click', function () {
+          openImagePicker(1, function (urls) {
+            if (!urls[0]) return;
+            var path = el.dataset.demoImg;
+            if (/\.images\.0$/.test(path)) {
+              var base = path.replace(/\.images\.0$/, '');
+              setPath(body._demo, base + '.images', [urls[0]]);
+            } else {
+              setPath(body._demo, path, urls[0]);
+            }
+            draw();
+          });
+        });
+      });
+      $$('[data-add]', body).forEach(function (b) {
+        b.addEventListener('click', function () {
+          var what = b.dataset.add;
+          var list = body._demo[what];
+          if (what === 'cats') list.push({ id: 'c' + Date.now(), name: 'Nueva categoría', slug: 'nueva', kind: 'product', sort_order: list.length + 1, active: true });
+          if (what === 'products') list.push({ id: 'p' + Date.now(), category_id: (list[0] && list[0].category_id) || (body._demo.cats[0] || {}).id || '', name: 'Nuevo artículo', description: '', short_desc: '', price: 0, images: [], kind: 'product', active: true, sort_order: list.length + 1 });
+          if (what === 'portfolio') list.push({ id: 'w' + Date.now(), title: 'Nuevo trabajo', description: '', details: '', image_url: '', sort_order: list.length + 1, active: true });
+          draw();
+        });
+      });
+      $$('[data-del]', body).forEach(function (b) {
+        b.addEventListener('click', function () {
+          var parts = b.dataset.del.split('.');
+          var idx = Number(parts[1]);
+          body._demo[parts[0]].splice(idx, 1);
+          draw();
+        });
+      });
+    }
+
+    $('[data-demo-save]', body).addEventListener('click', function () {
+      var btn = $('[data-demo-save]', body);
+      btn.disabled = true;
+      CW.store.saveSiteSettings('demo_catalog', body._demo).then(function () {
+        btn.disabled = false;
+        CW.toast(t('common.save'), 'ok');
+      }).catch(function (err) {
+        btn.disabled = false;
+        console.warn('[CW] No se pudo guardar la demo:', err);
+        CW.toast(t('set.save.error'), 'error');
+      });
+    });
+
+    $('[data-demo-reset]', body).addEventListener('click', function () {
+      CW.confirm(t('demo.reset.confirm'), function () {
+        CW.store.saveSiteSettings('demo_catalog', {}).then(function () {
+          body._demo = CW.demoCatalogMerged({});
+          draw();
+          CW.toast(t('demo.reset.ok'), 'ok');
+        });
+      }, true);
     });
   }
 

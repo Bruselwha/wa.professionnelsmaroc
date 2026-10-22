@@ -17,28 +17,12 @@
   function param(k) { return new URLSearchParams(location.search).get(k); }
 
   // ---- Datos ----------------------------------------------------------
-  function demoBiz() {
-    var b = {
-      id: 'demo', name: 'Marmol', slug: 'demo', description: 'Todo para tu hogar, con entrega a domicilio.',
-      whatsapp: '212600112233', country: 'MA', currency: 'MAD', brand_color: '#5B1A80', logo_url: '',
-      hero_enabled: true, hero_title: 'Todo para tu hogar', hero_desc: 'Productos y servicios seleccionados para ti.',
-      hero_image: '', delivery: 'custom', delivery_fee: 25, delivery_time: '24-48 h',
-      payments: ['Efectivo', 'Transferencia bancaria'], open_time: '09:00', close_time: '18:00',
-      slot_minutes: 30, work_days: [1, 2, 3, 4, 5, 6], published: true
-    };
-    var cats = [
-      { id: 'c1', business_id: 'demo', name: 'Ropa', slug: 'ropa', kind: 'product', sort_order: 1 },
-      { id: 'c2', business_id: 'demo', name: 'Abarrotes', slug: 'abarrotes', kind: 'product', sort_order: 2 },
-      { id: 'c3', business_id: 'demo', name: 'Cortes', slug: 'cortes', kind: 'service', sort_order: 3 },
-      { id: 'c4', business_id: 'demo', name: 'Reparaciones', slug: 'reparaciones', kind: 'service', sort_order: 4 }
-    ];
-    var products = [
-      { id: 'p1', business_id: 'demo', category_id: 'c1', name: 'Camiseta', description: 'Camiseta 100% algodón peinado. Disponible en varias tallas.', price: 100, promo_price: 60, images: ['assets/demo/camiseta.svg'], kind: 'product', active: true, sort_order: 1, created_at: '2026-01-01' },
-      { id: 'p2', business_id: 'demo', category_id: 'c2', name: 'Arroz extra 5 kg', description: 'Arroz de grano largo, ideal para el día a día.', price: 45, images: ['assets/demo/arroz.svg'], kind: 'product', active: true, sort_order: 2, created_at: '2026-01-02' },
-      { id: 'p3', business_id: 'demo', category_id: 'c3', name: 'Corte de pelo', description: 'Corte clásico con lavado y peinado.', price: 0, images: ['assets/demo/corte.svg'], kind: 'service', duration: '45 minutos', modality: 'En el local', bookable: true, active: true, sort_order: 3, created_at: '2026-01-03' },
-      { id: 'p4', business_id: 'demo', category_id: 'c4', name: 'Reparación de electrodoméstico', description: 'Diagnóstico y reparación a domicilio.', price: 150, images: ['assets/demo/reparacion.svg'], kind: 'service', duration: '2 horas', modality: 'A domicilio', bookable: false, active: true, sort_order: 4, created_at: '2026-01-04' }
-    ];
-    return { biz: b, cats: cats, products: products };
+  // El catálogo de ejemplo (`?b=demo`) se puede editar desde el panel:
+  // Administración → Demo. Si no hay nada guardado, usa los valores base.
+  function demoData(cb) {
+    CW.store.getSiteSettings().then(function (settings) {
+      cb(CW.demoCatalogMerged(settings && settings.demo_catalog));
+    }).catch(function () { cb(CW.demoCatalogMerged(null)); });
   }
 
   function load() {
@@ -52,8 +36,12 @@
       return CW.store.getBusinessBySlug(slug);
     }).then(function (biz) {
       if (!biz && slug === 'demo') {
-        var d = demoBiz(); S.biz = d.biz; S.cats = d.cats; S.products = d.products;
-        return;
+        return new Promise(function (resolve) {
+          demoData(function (d) {
+            S.biz = d.biz; S.cats = d.cats; S.products = d.products; S.portfolio = d.portfolio || [];
+            resolve();
+          });
+        });
       }
       if (!biz || (!biz.published && !CW.isDemo)) { S.biz = null; return; }
       S.biz = biz;
@@ -76,16 +64,16 @@
       return;
     }
     var b = S.biz;
-    document.title = (b.seo_title || b.name) + ' · WA Professionnels Maroc';
-    document.querySelector('meta[name=description]').setAttribute('content', b.seo_description || b.description || '');
+    document.title = (CW.tx(b, 'seo_title') || CW.tx(b, 'name')) + ' · WA Professionnels Maroc';
+    document.querySelector('meta[name=description]').setAttribute('content', CW.tx(b, 'seo_description') || CW.tx(b, 'description') || '');
     document.documentElement.style.setProperty('--brand', b.brand_color || '#5B1A80');
     document.documentElement.style.setProperty('--brand-soft', hexSoft(b.brand_color || '#5B1A80'));
 
     // Cabecera
     var brand = $('[data-cat-brand]');
     brand.innerHTML =
-      (b.logo_url ? '<img src="' + esc(b.logo_url) + '" alt="" class="cat-logo">' : '<span class="cat-logo ph" style="background:' + esc(b.brand_color) + '">' + esc((b.name || 'M').charAt(0)) + '</span>') +
-      '<div><b>' + esc(b.name) + '</b>' + (b.description ? '<small>' + esc(b.description) + '</small>' : '') + '</div>';
+      (b.logo_url ? '<img src="' + esc(b.logo_url) + '" alt="" class="cat-logo">' : '<span class="cat-logo ph" style="background:' + esc(b.brand_color) + '">' + esc((CW.tx(b, 'name') || 'M').charAt(0)) + '</span>') +
+      '<div><b>' + esc(CW.tx(b, 'name')) + '</b>' + (CW.tx(b, 'description') ? '<small>' + esc(CW.tx(b, 'description')) + '</small>' : '') + '</div>';
 
     // Enlace al porfolio: solo si el negocio ha publicado trabajos.
     $$('[data-pf-link]').forEach(function (pf) {
@@ -102,8 +90,8 @@
     var hero = '';
     if (b.hero_enabled) {
       hero = '<section class="cat-hero" style="' + (b.hero_image ? 'background-image:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),url(' + esc(b.hero_image) + ')' : '') + '">' +
-        '<div class="wrap"><h1>' + esc(b.hero_title || b.name) + '</h1>' +
-        (b.hero_desc ? '<p>' + esc(b.hero_desc) + '</p>' : '') + '</div></section>';
+        '<div class="wrap"><h1>' + esc(CW.tx(b, 'hero_title') || CW.tx(b, 'name')) + '</h1>' +
+        (CW.tx(b, 'hero_desc') ? '<p>' + esc(CW.tx(b, 'hero_desc')) + '</p>' : '') + '</div></section>';
     }
 
     // Info entrega / pagos
@@ -128,7 +116,7 @@
 
     root.innerHTML = hero + info +
       '<section class="wrap cat-grid" data-grid></section>' +
-      '<footer class="cat-footer"><div class="wrap"><div>' + esc(b.name) + ' · WA Professionnels Maroc</div>' +
+      '<footer class="cat-footer"><div class="wrap"><div>' + esc(CW.tx(b, 'name')) + ' · WA Professionnels Maroc</div>' +
         '<nav class="cat-policies">' +
           (S.portfolio.length ? '<a href="' + esc(CW.url('porfolio.html') + '?b=' + encodeURIComponent(b.slug || '')) + '">' + t('port.link') + '</a>' : '') +
           ['legal', 'privacy', 'cookies', 'terms', 'returns', 'shipping'].map(function (k) {
@@ -171,7 +159,7 @@
     });
     var prodCats = cats.filter(function (c) { return c.kind !== 'service'; });
     var servCats = cats.filter(function (c) { return c.kind === 'service'; });
-    function opt(c) { return '<option value="' + c.id + '"' + (c.id === S.filterCat ? ' selected' : '') + '>' + esc(c.name) + ' (' + countInCat(c.id) + ')</option>'; }
+    function opt(c) { return '<option value="' + c.id + '"' + (c.id === S.filterCat ? ' selected' : '') + '>' + esc(CW.tx(c, 'name')) + ' (' + countInCat(c.id) + ')</option>'; }
     var catOpts = '<option value="">' + t('cat.public.allcat') + '</option>';
     if (prodCats.length && servCats.length) {
       catOpts += '<optgroup label="' + t('cat.public.products') + '">' + prodCats.map(opt).join('') + '</optgroup>';
@@ -213,7 +201,9 @@
     if (S.filterCat) list = list.filter(function (p) { return p.category_id === S.filterCat; });
     // Nota: una categoría desactivada desaparece del selector, pero sus
     // artículos siguen visibles en «Todas».
-    if (S.q) { var q = S.q.toLowerCase(); list = list.filter(function (p) { return (p.name || '').toLowerCase().includes(q) || (p.description || '').toLowerCase().includes(q); }); }
+    if (S.q) { var q = S.q.toLowerCase(); list = list.filter(function (p) {
+      return String(CW.tx(p, 'name') || '').toLowerCase().includes(q) || String(CW.tx(p, 'description') || '').toLowerCase().includes(q);
+    }); }
     list.sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
     return list;
   }
@@ -234,15 +224,15 @@
   function shareCard(id) {
     var p = S.products.find(function (x) { return x.id === id; }); if (!p) return;
     var c = catOf(p.category_id);
-    CW.api.shareWhatsApp(CW.api.shareItem(S.biz, Object.assign({ category_name: c ? c.name : '' }, p)));
+    CW.api.shareWhatsApp(CW.api.shareItem(S.biz, Object.assign({}, p, { name: CW.tx(p, 'name'), description: CW.tx(p, 'description'), category_name: c ? CW.tx(c, 'name') : '' })));
   }
 
   // Descripción breve para las tarjetas: se usa la del panel; si está vacía,
   // se recorta la descripción larga a 90 caracteres.
   function shortText(p) {
-    var s = String(p.short_desc || '').replace(/\s+/g, ' ').trim();
+    var s = String(CW.tx(p, 'short_desc') || '').replace(/\s+/g, ' ').trim();
     var isOwn = !!s;
-    if (!s) s = String(p.description || '').replace(/\s+/g, ' ').trim();
+    if (!s) s = String(CW.tx(p, 'description') || '').replace(/\s+/g, ' ').trim();
     if (!s) return '';
     if (s.length > 90) {
       s = s.slice(0, 89).replace(/[\s,.;:]+\S*$/, '').replace(/[\s,.;:]+$/, '') + '…';
@@ -256,12 +246,12 @@
     var short = shortText(p);
     var isService = p.kind === 'service';
     var hasPromo = !isService && Number(p.promo_price) > 0 && Number(p.promo_price) < Number(p.price);
-    var img = (p.images && p.images[0]) ? '<img src="' + esc(p.images[0]) + '" alt="' + esc(p.name) + '" loading="lazy">' : '<div class="ph-img">🖼️</div>';
+    var img = (p.images && p.images[0]) ? '<img src="' + esc(p.images[0]) + '" alt="' + esc(CW.tx(p, 'name')) + '" loading="lazy">' : '<div class="ph-img">🖼️</div>';
     var inCart = S.cart.find(function (x) { return x.id === p.id; });
 
     var media = '<div class="pc-media" data-detail="' + p.id + '">' + img +
       (isService ? '<span class="pc-kind">🔧 ' + t('prod.type.service') + '</span>' : '') +
-      (c ? '<span class="pc-cat">' + esc(c.name) + '</span>' : '') +
+      (c ? '<span class="pc-cat">' + esc(CW.tx(c, 'name')) + '</span>' : '') +
       (hasPromo ? '<span class="pc-off">-' + CW.api.pct(p.promo_price, p.price) + '%</span>' : '') +
       (inCart ? '<span class="pc-incart">✓ ' + inCart.qty + '</span>' : '') +
       '</div>';
@@ -285,7 +275,7 @@
       if (p.modality) specs += '<span class="pc-spec"><i>📍</i>' + esc(p.modality) + '</span>';
       return '<article class="pc pc--service">' + media +
         '<div class="pc-body">' +
-          '<h3 class="pc-name">' + esc(p.name) + '</h3>' +
+          '<h3 class="pc-name">' + esc(CW.tx(p, 'name')) + '</h3>' +
           (short ? '<p class="pc-desc">' + esc(short) + '</p>' : '') +
           (specs ? '<div class="pc-specs-list">' + specs + '</div>' : '') +
           '<div class="pc-service-foot">' +
@@ -305,7 +295,7 @@
       : '';
     return '<article class="pc pc--product">' + media +
       '<div class="pc-body">' +
-        '<h3 class="pc-name">' + esc(p.name) + '</h3>' +
+        '<h3 class="pc-name">' + esc(CW.tx(p, 'name')) + '</h3>' +
         (short ? '<p class="pc-desc">' + esc(short) + '</p>' : '') +
         priceHtml + promo +
         actions +
@@ -320,23 +310,23 @@
     var imgs = (p.images && p.images.length) ? p.images : [null];
     var m = CW.modal({
       className: 'detail-modal',
-      title: p.name,
+      title: CW.tx(p, 'name'),
       html:
         '<div class="detail-grid">' +
           '<div class="detail-gallery"><div class="dg-main" data-dg-main>' + (imgs[0] ? '<img src="' + esc(imgs[0]) + '">' : '<div class="ph-img big">🖼️</div>') + '</div>' +
           (imgs.length > 1 ? '<div class="dg-thumbs">' + imgs.map(function (u, i) { return '<button data-dg="' + i + '" class="' + (i === 0 ? 'active' : '') + '">' + (u ? '<img src="' + esc(u) + '">' : '🖼️') + '</button>'; }).join('') + '</div>' : '') + '</div>' +
-          '<div class="detail-info"><span class="detail-type">' + (p.kind === 'service' ? t('prod.type.service') : t('prod.type.product')) + (c ? ' · ' + esc(c.name) : '') + '</span>' +
-          '<h2>' + esc(p.name) + '</h2>' +
+          '<div class="detail-info"><span class="detail-type">' + (p.kind === 'service' ? t('prod.type.service') : t('prod.type.product')) + (c ? ' · ' + esc(CW.tx(c, 'name')) : '') + '</span>' +
+          '<h2>' + esc(CW.tx(p, 'name')) + '</h2>' +
           '<div class="detail-price">' + (Number(p.promo_price) > 0 && Number(p.promo_price) < Number(p.price) ?
             '<b>' + money(p.promo_price, S.biz.currency) + '</b> <s>' + money(p.price, S.biz.currency) + '</s> <span class="tag warn">-' + CW.api.pct(p.promo_price, p.price) + '%</span>' :
             (Number(p.price) > 0 ? '<b>' + money(p.price, S.biz.currency) + '</b>' : '<b>' + t('cat.public.consult') + '</b>')) + '</div>' +
           '<ul class="detail-rows">' +
-            '<li>🏷️ ' + t('cat.public.category') + ': <b>' + esc(c ? c.name : '—') + '</b></li>' +
+            '<li>🏷️ ' + t('cat.public.category') + ': <b>' + esc(c ? CW.tx(c, 'name') : '—') + '</b></li>' +
             (p.duration ? '<li>⏱ ' + t('cat.public.duration') + ': <b>' + esc(p.duration) + '</b></li>' : '') +
             (p.modality ? '<li>📍 ' + t('cat.public.modality') + ': <b>' + esc(p.modality) + '</b></li>' : '') +
             (p.kind === 'service' ? '<li>✅ ' + t('cat.public.available') + '</li>' : '') +
           '</ul>' +
-          (p.description ? '<p class="detail-desc">' + esc(p.description).replace(/\n/g, '<br>') + '</p>' : '') +
+          (CW.tx(p, 'description') ? '<p class="detail-desc">' + esc(CW.tx(p, 'description')).replace(/\n/g, '<br>') + '</p>' : '') +
           '<div class="detail-actions"><button class="btn primary" data-d-add="' + p.id + '">' + (p.kind === 'service' ? (p.bookable ? t('cat.public.book') : t('cat.public.request')) : t('cat.public.add')) + '</button>' +
           '<button class="btn ghost" data-d-share="' + p.id + '">↗ ' + t('common.share') + '</button></div></div>' +
         '</div>'
@@ -350,7 +340,7 @@
     });
     $('[data-d-add]', m.modal).addEventListener('click', function () { addToCart(p.id); m.close(); openCart(); });
     $('[data-d-share]', m.modal).addEventListener('click', function () {
-      CW.api.shareWhatsApp(CW.api.shareItem(S.biz, Object.assign({ category_name: c ? c.name : '' }, p)));
+      CW.api.shareWhatsApp(CW.api.shareItem(S.biz, Object.assign({}, p, { name: CW.tx(p, 'name'), description: CW.tx(p, 'description'), category_name: c ? CW.tx(c, 'name') : '' })));
     });
   }
 
@@ -378,7 +368,7 @@
       html:
         '<div class="bk-service">' +
           '<div class="bk-service-thumb">' + ((p.images && p.images[0]) ? '<img src="' + esc(p.images[0]) + '" alt="">' : '🛠️') + '</div>' +
-          '<div class="bk-service-info"><b>' + esc(p.name) + '</b>' +
+          '<div class="bk-service-info"><b>' + esc(CW.tx(p, 'name')) + '</b>' +
             '<small>' + [p.duration, p.modality].filter(Boolean).map(esc).join(' · ') + '</small>' +
             '<span class="bk-price">' + (Number(p.price) > 0 ? money(p.price, S.biz.currency) : t('cat.public.consult')) + '</span>' +
           '</div>' +
@@ -505,13 +495,13 @@
     var it = opts.appointment ? null : S.cart.find(function (x) { return x.id === id && !x.appointment; });
     if (it) it.qty++;
     else S.cart.push({
-      id: p.id, name: p.name, price: eff(p), qty: 1, kind: p.kind,
+      id: p.id, name: CW.tx(p, 'name'), price: eff(p), qty: 1, kind: p.kind,
       image: (p.images && p.images[0]) || '', bookable: !!p.bookable,
       category_name: (catOf(p.category_id) || {}).name || '',
       duration: p.duration || '', modality: p.modality || '',
       appointment: opts.appointment || null
     });
-    if (!opts.appointment) CW.toast(t('common.add') + ': ' + p.name);
+    if (!opts.appointment) CW.toast(t('common.add') + ': ' + CW.tx(p, 'name'));
     updateCartUI(); drawGrid();
   }
   function removeFromCart(id) { S.cart = S.cart.filter(function (x) { return x.id !== id; }); updateCartUI(); drawGrid(); }
