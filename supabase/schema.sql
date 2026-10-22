@@ -100,6 +100,7 @@ create table if not exists public.products (
   duration    text,
   modality    text,
   bookable    boolean not null default false,
+  requirements text,
   created_at  timestamptz not null default now()
 );
 create index if not exists products_business_idx on public.products (business_id, sort_order);
@@ -140,6 +141,10 @@ create table if not exists public.portfolio (
   title       text not null,
   description text,
   image_url   text,
+  details     text,
+  client      text,
+  place       text,
+  work_date   text,
   sort_order  integer not null default 0,
   active      boolean not null default true,
   created_at  timestamptz not null default now()
@@ -256,6 +261,23 @@ security definer
 set search_path = public
 as $$
   update public.products set views = coalesce(views, 0) + 1 where id = pid;
+$$;
+
+-- Horas ya ocupadas de un día: el catálogo público puede consultar la
+-- disponibilidad sin permiso de lectura sobre `orders` (devuelve solo horas).
+create or replace function public.busy_slots(bid uuid, day date)
+returns setof text
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select to_char(o.appointment_at, 'HH24:MI')
+  from public.orders o
+  where o.business_id = bid
+    and o.appointment_at is not null
+    and (o.appointment_at at time zone 'UTC')::date = day
+    and coalesce(o.status, 'new') <> 'cancelled';
 $$;
 
 -- Añadir/quitar super administradores desde el panel.

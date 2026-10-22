@@ -86,12 +86,9 @@
     brand.innerHTML =
       (b.logo_url ? '<img src="' + esc(b.logo_url) + '" alt="" class="cat-logo">' : '<span class="cat-logo ph" style="background:' + esc(b.brand_color) + '">' + esc((b.name || 'M').charAt(0)) + '</span>') +
       '<div><b>' + esc(b.name) + '</b>' + (b.description ? '<small>' + esc(b.description) + '</small>' : '') + '</div>';
-    var wa = $('[data-wa-header]');
-    if (b.whatsapp) { wa.href = CW.api.waLink(b.whatsapp, 'Hola ' + b.name + ', quiero hacer un pedido.'); } else { wa.hidden = true; }
 
     // Enlace al porfolio: solo si el negocio ha publicado trabajos.
-    var pf = $('[data-pf-link]');
-    if (pf) {
+    $$('[data-pf-link]').forEach(function (pf) {
       if (S.portfolio.length) {
         pf.hidden = false;
         pf.href = CW.url('porfolio.html') + '?b=' + encodeURIComponent(b.slug || '');
@@ -99,7 +96,7 @@
       } else {
         pf.hidden = true;
       }
-    }
+    });
 
     // Hero
     var hero = '';
@@ -124,10 +121,12 @@
         '</div></section>';
     }
 
-    // La barra (categorías + buscador) va primero: es la parte superior del
-    // catálogo y queda fija bajo la cabecera al desplazarse.
-    root.innerHTML = '<div class="filter-bar-cat" data-filters>' + renderFilters() + '</div>' +
-      hero + info +
+    // El menú (categorías + buscador) vive en la cabecera, entre el logo y las
+    // banderas de idioma. En móvil se despliega desde la hamburguesa.
+    var menu = $('[data-cat-menu]');
+    if (menu) menu.innerHTML = renderFilters();
+
+    root.innerHTML = hero + info +
       '<section class="wrap cat-grid" data-grid></section>' +
       '<footer class="cat-footer"><div class="wrap"><div>' + esc(b.name) + ' · WA Professionnels Maroc</div>' +
         '<nav class="cat-policies">' +
@@ -181,9 +180,7 @@
       catOpts += cats.map(opt).join('');
     }
     var active = (showTypes && S.filterType !== 'all') || S.filterCat || S.q;
-    return '<div class="wrap filter-inner">' +
-      '<button type="button" class="btn ghost small filter-toggle" data-ftoggle aria-expanded="false">' + t('cat.public.filters') + '</button>' +
-      '<div class="filter-fields" data-ffields>' +
+    return '<div class="filter-inner" data-filters>' +
       (showTypes ? '<div class="segmented" data-ftype>' +
         '<button data-ft="all" class="' + (S.filterType === 'all' ? 'active' : '') + '">' + t('common.all') + '</button>' +
         '<button data-ft="product" class="' + (S.filterType === 'product' ? 'active' : '') + '">' + t('cat.public.products') + '</button>' +
@@ -192,23 +189,18 @@
       (cats.length ? '<select data-fcat aria-label="' + t('common.category') + '">' + catOpts + '</select>' : '') +
       '<input class="search" data-fq type="search" aria-label="' + t('cat.public.search') + '" placeholder="' + t('cat.public.search') + '" value="' + esc(S.q) + '">' +
       (active ? '<button class="btn ghost small" data-fclear>' + t('cat.public.clear') + '</button>' : '') +
-      '</div></div>';
+      '</div>';
   }
 
   function bindFilters() {
-    var tg = $('[data-ftoggle]');
-    if (tg) tg.addEventListener('click', function () {
-      var ff = $('[data-ffields]');
-      var open = ff.classList.toggle('open');
-      tg.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
     $$('[data-ft]').forEach(function (b) { b.addEventListener('click', function () { S.filterType = b.dataset.ft; S.filterCat = ''; rerenderFilters(); }); });
     var fc = $('[data-fcat]'); if (fc) fc.addEventListener('change', function () { S.filterCat = fc.value; drawGrid(); });
     var q = $('[data-fq]'); if (q) q.addEventListener('input', function () { S.q = q.value; drawGrid(); });
     var cl = $('[data-fclear]'); if (cl) cl.addEventListener('click', function () { S.filterType = 'all'; S.filterCat = ''; S.q = ''; rerenderFilters(); });
   }
   function rerenderFilters() {
-    $('[data-filters]').innerHTML = renderFilters();
+    var menu = $('[data-cat-menu]');
+    if (menu) menu.innerHTML = renderFilters();
     bindFilters();
     drawGrid();
   }
@@ -234,6 +226,7 @@
     if (!list.length) { grid.innerHTML = '<div class="empty-state"><div class="es-icon">📦</div><b>' + t('prod.empty') + '</b></div>'; return; }
     grid.innerHTML = list.map(cardHTML).join('');
     $$('[data-add]', grid).forEach(function (b) { b.addEventListener('click', function () { addToCart(b.dataset.add); }); });
+    $$('[data-book]', grid).forEach(function (b) { b.addEventListener('click', function () { openBooking(b.dataset.book); }); });
     $$('[data-detail]', grid).forEach(function (b) { b.addEventListener('click', function () { openDetail(b.dataset.detail); }); });
     $$('[data-share]', grid).forEach(function (b) { b.addEventListener('click', function (e) { e.stopPropagation(); shareCard(b.dataset.share); }); });
   }
@@ -275,7 +268,9 @@
 
     var btn = isService ? (p.bookable ? t('cat.public.book') : t('cat.public.request')) : t('cat.public.add');
     var actions = '<div class="pc-actions">' +
-      '<button class="btn ' + (isService ? 'soft' : 'primary') + ' small" data-add="' + p.id + '">' + btn + '</button>' +
+      (isService && p.bookable
+        ? '<button class="btn primary small" data-book="' + p.id + '">📅 ' + t('cat.public.book') + '</button>'
+        : '<button class="btn ' + (isService ? 'soft' : 'primary') + ' small" data-add="' + p.id + '">' + btn + '</button>') +
       '<button class="btn ghost small" data-detail="' + p.id + '">' + t('cat.public.details') + '</button>' +
       '<button class="btn ghost small pc-share" data-share="' + p.id + '" aria-label="' + t('common.share') + '" title="' + t('common.share') + '">↗</button>' +
       '</div>';
@@ -359,13 +354,164 @@
     });
   }
 
+  // ---- Reserva de servicios -------------------------------------------
+  // Formulario propio para servicios (fontanero, peluquería, diseño web…):
+  // calendario con días cerrados y ocupados, horas disponibles y detalles.
+  var BK = { item: null, month: null, date: '', time: '', busy: [], modal: null };
+
+  function ymd(d) {
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  }
+  function parseYmd(v) { var p = String(v).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function workDays(biz) { return (biz.work_days && biz.work_days.length) ? biz.work_days : [1, 2, 3, 4, 5, 6]; }
+
+  function openBooking(id) {
+    var p = S.products.find(function (x) { return x.id === id; });
+    if (!p) return;
+    BK.item = p; BK.date = ''; BK.time = ''; BK.busy = [];
+    var today = new Date();
+    BK.month = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    var m = CW.modal({
+      className: 'bk-modal',
+      title: t('bk.title'),
+      html:
+        '<div class="bk-service">' +
+          '<div class="bk-service-thumb">' + ((p.images && p.images[0]) ? '<img src="' + esc(p.images[0]) + '" alt="">' : '🛠️') + '</div>' +
+          '<div class="bk-service-info"><b>' + esc(p.name) + '</b>' +
+            '<small>' + [p.duration, p.modality].filter(Boolean).map(esc).join(' · ') + '</small>' +
+            '<span class="bk-price">' + (Number(p.price) > 0 ? money(p.price, S.biz.currency) : t('cat.public.consult')) + '</span>' +
+          '</div>' +
+        '</div>' +
+        (p.requirements ? '<p class="bk-req">ℹ️ ' + esc(p.requirements) + '</p>' : '') +
+        '<div class="bk-grid">' +
+          '<div class="bk-cal"><div class="bk-cal-head">' +
+            '<button type="button" class="icon-btn" data-bk-prev aria-label="' + t('bk.prev') + '">‹</button>' +
+            '<b data-bk-month></b>' +
+            '<button type="button" class="icon-btn" data-bk-next aria-label="' + t('bk.next') + '">›</button>' +
+          '</div><div class="bk-days-head">' + ['L', 'M', 'X', 'J', 'V', 'S', 'D'].map(function (d) { return '<span>' + d + '</span>'; }).join('') + '</div>' +
+          '<div class="bk-days" data-bk-days></div>' +
+          '<p class="muted bk-legend">' + t('bk.legend') + '</p></div>' +
+          '<div class="bk-slots"><h4>' + t('bk.slots') + '</h4><div class="bk-slot-list" data-bk-slotlist>' +
+            '<p class="muted">' + t('bk.pickday') + '</p></div>' +
+            '<label class="field"><span>' + t('bk.notes') + '</span><textarea data-bk-notes rows="2" maxlength="240"></textarea></label>' +
+            '<label class="field bk-address" hidden><span>' + t('bk.address') + '</span><input data-bk-address></label>' +
+          '</div>' +
+        '</div>' +
+        '<p class="bk-summary muted" data-bk-sum>' + t('bk.nothing') + '</p>',
+      footer: '<button class="btn ghost" data-close>' + t('common.cancel') + '</button>' +
+              '<button class="btn primary" data-bk-confirm disabled>✓ ' + t('bk.confirm') + '</button>'
+    });
+    BK.modal = m;
+    if (/domicilio|a domicilio|home/i.test(String(p.modality || '')) || /delivery/.test(String(S.biz.delivery || ''))) {
+      $('.bk-address', m.modal).hidden = false;
+    }
+    $('[data-bk-prev]', m.modal).addEventListener('click', function () { BK.month.setMonth(BK.month.getMonth() - 1); drawBookingCalendar(m.modal); });
+    $('[data-bk-next]', m.modal).addEventListener('click', function () { BK.month.setMonth(BK.month.getMonth() + 1); drawBookingCalendar(m.modal); });
+    $('[data-bk-confirm]', m.modal).addEventListener('click', confirmBooking);
+    drawBookingCalendar(m.modal);
+  }
+
+  function drawBookingCalendar(modal) {
+    var lang = (CW.i18n && CW.i18n.lang) || 'es';
+    var fmt = new Intl.DateTimeFormat(lang, { month: 'long', year: 'numeric' });
+    $('[data-bk-month]', modal).textContent = fmt.format(BK.month);
+
+    var first = new Date(BK.month.getFullYear(), BK.month.getMonth(), 1);
+    var startOffset = (first.getDay() + 6) % 7; // lunes = 0
+    var daysInMonth = new Date(BK.month.getFullYear(), BK.month.getMonth() + 1, 0).getDate();
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var html = '';
+    for (var i = 0; i < startOffset; i++) html += '<span class="bk-day empty"></span>';
+    for (var d = 1; d <= daysInMonth; d++) {
+      var date = new Date(BK.month.getFullYear(), BK.month.getMonth(), d);
+      var past = date < today;
+      var closed = workDays(S.biz).indexOf(date.getDay()) === -1;
+      var sel = BK.date === ymd(date);
+      html += '<button type="button" class="bk-day' + (past || closed ? ' off' : '') + (sel ? ' sel' : '') + '"' +
+        (past || closed ? ' disabled' : '') + ' data-bk-day="' + ymd(date) + '">' + d + '</button>';
+    }
+    var box = $('[data-bk-days]', modal);
+    box.innerHTML = html;
+    $$('[data-bk-day]', box).forEach(function (b) {
+      b.addEventListener('click', function () { selectBookingDay(modal, b.dataset.bkDay); });
+    });
+  }
+
+  function selectBookingDay(modal, day) {
+    BK.date = day; BK.time = '';
+    drawBookingCalendar(modal);
+    var list = $('[data-bk-slotlist]', modal);
+    list.innerHTML = '<p class="muted">' + t('common.loading') + '</p>';
+    CW.store.busySlots(S.biz.id, day).then(function (busy) {
+      BK.busy = busy || [];
+      var slots = CW.api.timeSlots(S.biz, day);
+      if (day === ymd(new Date())) {
+        var now = new Date();
+        slots = slots.filter(function (s) {
+          var hm = s.split(':'); var t2 = new Date(); t2.setHours(+hm[0], +hm[1], 0, 0);
+          return t2 > now;
+        });
+      }
+      var free = slots.filter(function (s) { return BK.busy.indexOf(s) === -1; });
+      list.innerHTML = free.length
+        ? free.map(function (s) {
+            return '<button type="button" class="bk-slot' + (BK.time === s ? ' sel' : '') + '" data-bk-slot="' + s + '">' + s + '</button>';
+          }).join('')
+        : '<p class="muted">' + t('bk.full') + '</p>';
+      $$('[data-bk-slot]', list).forEach(function (b) {
+        b.addEventListener('click', function () {
+          BK.time = b.dataset.bkSlot;
+          $$('[data-bk-slot]', list).forEach(function (x) { x.classList.toggle('sel', x === b); });
+          updateBookingSummary(modal);
+        });
+      });
+      updateBookingSummary(modal);
+    });
+  }
+
+  function updateBookingSummary(modal) {
+    var sum = $('[data-bk-sum]', modal);
+    var ok = !!(BK.date && BK.time);
+    if (sum) {
+      sum.textContent = ok
+        ? t('bk.summary', { date: new Date(BK.date + 'T00:00:00').toLocaleDateString((CW.i18n && CW.i18n.lang) || 'es', { weekday: 'long', day: 'numeric', month: 'long' }), time: BK.time })
+        : t('bk.nothing');
+      sum.classList.toggle('ok', ok);
+    }
+    var btn = $('[data-bk-confirm]', modal);
+    if (btn) btn.disabled = !ok;
+  }
+
+  function confirmBooking() {
+    if (!BK.date || !BK.time) return;
+    var box = BK.modal && BK.modal.modal;
+    var notes = (box && $('[data-bk-notes]', box) || {}).value || '';
+    var addr = (box && $('[data-bk-address]', box) || {}).value || '';
+    var p = BK.item;
+    addToCart(p.id, {
+      appointment: { date: BK.date, time: BK.time, notes: notes.trim(), address: addr.trim() }
+    });
+    BK.modal.close();
+    openCart();
+    CW.toast(t('bk.added'), 'ok');
+  }
+
   // ---- Carrito --------------------------------------------------------
-  function addToCart(id) {
+  function addToCart(id, opts) {
     var p = S.products.find(function (x) { return x.id === id; }); if (!p) return;
-    var it = S.cart.find(function (x) { return x.id === id; });
+    opts = opts || {};
+    // Una reserva de servicio nunca se suma a otra: es una cita con su hora.
+    var it = opts.appointment ? null : S.cart.find(function (x) { return x.id === id && !x.appointment; });
     if (it) it.qty++;
-    else S.cart.push({ id: p.id, name: p.name, price: eff(p), qty: 1, kind: p.kind, image: (p.images && p.images[0]) || '', bookable: !!p.bookable, category_name: (catOf(p.category_id) || {}).name || '' });
-    CW.toast(t('common.add') + ': ' + p.name);
+    else S.cart.push({
+      id: p.id, name: p.name, price: eff(p), qty: 1, kind: p.kind,
+      image: (p.images && p.images[0]) || '', bookable: !!p.bookable,
+      category_name: (catOf(p.category_id) || {}).name || '',
+      duration: p.duration || '', modality: p.modality || '',
+      appointment: opts.appointment || null
+    });
+    if (!opts.appointment) CW.toast(t('common.add') + ': ' + p.name);
     updateCartUI(); drawGrid();
   }
   function removeFromCart(id) { S.cart = S.cart.filter(function (x) { return x.id !== id; }); updateCartUI(); drawGrid(); }
@@ -415,6 +561,7 @@
         return '<li class="cart-item">' +
           '<div class="ci-thumb">' + (it.image ? '<img src="' + esc(it.image) + '">' : '🖼️') + '</div>' +
           '<div class="ci-info"><b>' + esc(it.name) + '</b>' + (it.kind === 'service' ? '<small>' + t('prod.type.service') + '</small>' : '') +
+          (it.appointment ? '<small class="ci-appt">📅 ' + esc(it.appointment.date) + ' · ' + esc(it.appointment.time) + '</small>' : '') +
           '<div class="qty"><button data-qm="' + it.id + '">−</button><span>' + it.qty + '</span><button data-qp="' + it.id + '">+</button></div></div>' +
           '<div class="ci-right"><b>' + (it.price > 0 ? money(it.price * it.qty, S.biz.currency) : t('cat.public.consult')) + '</b>' +
           '<button class="icon-btn" data-rm="' + it.id + '">✕</button></div></li>';
@@ -471,7 +618,9 @@
       var phone = ($('[data-c-phone]', body).value || '').trim();
       if (!name || !phone) { CW.toast(t('cat.public.required')); return; }
       var appt = null;
-      if (hasBookable) {
+      var booked = S.cart.filter(function (x) { return x.appointment && x.appointment.date; })[0];
+      if (booked) appt = new Date(booked.appointment.date + 'T' + booked.appointment.time + ':00').toISOString();
+      else if (hasBookable) {
         var d = $('[data-c-date]', body).value, h = $('[data-c-time]', body).value;
         if (d && h && h !== '—') appt = new Date(d + 'T' + h + ':00').toISOString();
       }
@@ -481,7 +630,13 @@
         customer_address: ($('[data-c-address]', body).value || '').trim(),
         customer_city: ($('[data-c-city]', body).value || '').trim(),
         note: ($('[data-c-note]', body).value || '').trim(),
-        items: S.cart.map(function (x) { return { name: x.name, qty: x.qty, price: x.price, kind: x.kind }; }),
+        items: S.cart.map(function (x) {
+          return {
+            name: x.name, qty: x.qty, price: x.price, kind: x.kind,
+            duration: x.duration || '', modality: x.modality || '',
+            appointment: x.appointment || null
+          };
+        }),
         subtotal: subtotal(), fee: fee, total: total, appointment_at: appt, status: 'new'
       };
       var msg = CW.api.orderMessage(S.biz, order);
@@ -507,6 +662,33 @@
     var ov = $('[data-cart-overlay]'); if (ov) ov.addEventListener('click', closeCart);
     var cc = $('[data-cart-close]'); if (cc) cc.addEventListener('click', closeCart);
     var fab = $('[data-cart-fab]'); if (fab) fab.addEventListener('click', openCart);
+
+    // Hamburguesa: despliega el menú completo (categorías, buscador, idioma,
+    // porfolio y asistente) en móvil.
+    var burger = $('[data-cat-burger]');
+    var header = $('[data-cat-header]');
+    if (burger && header) {
+      burger.addEventListener('click', function () {
+        var open = header.classList.toggle('menu-open');
+        burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+        burger.textContent = open ? '✕' : '☰';
+      });
+      document.addEventListener('click', function (e) {
+        if (!header.classList.contains('menu-open')) return;
+        if (header.contains(e.target)) return;
+        header.classList.remove('menu-open');
+        burger.setAttribute('aria-expanded', 'false');
+        burger.textContent = '☰';
+      });
+    }
+
+    // Botón «Asistente» de la cabecera y del menú móvil.
+    $$('[data-asst-open]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (header) header.classList.remove('menu-open');
+        if (CW.assistant && CW.assistant.open) CW.assistant.open();
+      });
+    });
     window.addEventListener('cw:lang', function () { if (S.biz) render(); });
     load().then(render).catch(function (e) { console.error(e); render(); });
   });

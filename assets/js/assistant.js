@@ -299,6 +299,12 @@
   }
 
   // ---------------------------------------------------------------- Init
+  // API pública: la cabecera del catálogo abre el asistente desde su botón.
+  CW.assistant = {
+    open: function () { if (A.els) setOpen(true); },
+    close: function () { if (A.els) setOpen(false); }
+  };
+
   document.addEventListener('DOMContentLoaded', function () {
     build();
     // Re-traduce al cambiar de idioma

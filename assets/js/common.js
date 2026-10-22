@@ -145,6 +145,10 @@
         } else {
           L.push('    ' + it.qty + ' x A consultar');
         }
+        if (it.duration || it.modality) L.push('    ' + [it.duration, it.modality].filter(Boolean).join(' · '));
+        if (it.appointment && it.appointment.date) L.push('    Cita: ' + it.appointment.date + ' a las ' + it.appointment.time);
+        if (it.appointment && it.appointment.notes) L.push('    Detalles: ' + it.appointment.notes);
+        if (it.appointment && it.appointment.address) L.push('    Dirección: ' + it.appointment.address);
       });
       L.push(line);
       L.push('*RESUMEN*');

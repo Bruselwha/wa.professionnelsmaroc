@@ -125,9 +125,25 @@
 .lp-types { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 .lp-type {
   background: var(--lp-card); border: 1px solid var(--lp-line); border-radius: 14px;
-  padding: 16px 10px; text-align: center; font-size: .86rem; font-weight: 650; box-shadow: var(--lp-shadow);
+  padding: 16px 10px; text-align: center; font-size: .86rem; font-weight: 650;
+  box-shadow: var(--lp-shadow); color: var(--lp-ink); font-family: inherit;
+  cursor: pointer; transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
 }
+.lp-type:hover { transform: translateY(-2px); border-color: var(--brand); box-shadow: 0 12px 26px rgba(20,16,40,.10); }
+.lp-type:focus-visible { outline: 3px solid var(--brand-soft); outline-offset: 2px; }
 .lp-type span { display: block; font-size: 1.3rem; margin-bottom: 6px; }
+
+/* Pop-up de tipos de negocio */
+.btype-modal { max-width: 620px; }
+.bt-top { display: flex; gap: 14px; align-items: flex-start; }
+.bt-ico { font-size: 2rem; line-height: 1; }
+.bt-top h3 { margin: 0 0 4px; font-size: 1.1rem; }
+.bt-top p { margin: 0; color: var(--ink-2); line-height: 1.55; font-size: .92rem; }
+.bt-h { margin: 18px 0 8px; font-size: .74rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.bt-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.bt-chips span { background: var(--brand-soft); color: var(--brand); border-radius: 999px; padding: 6px 12px; font-size: .8rem; font-weight: 650; }
+.bt-list { margin: 0; padding-inline-start: 18px; line-height: 1.65; color: var(--ink-2); font-size: .92rem; }
+.bt-note { margin: 16px 0 0; font-size: .82rem; color: var(--muted); }
 
 /* ---------- Banda oscura ---------- */
 .lp-dark { background: var(--lp-dark); color: #fff; padding: clamp(40px, 6vw, 76px) 0; }
@@ -260,6 +276,11 @@
   .lp-h1 { font-size: clamp(1.55rem, 7.4vw, 2.1rem); }
   .lp-lead { font-size: 1rem; }
   .lp-hero-grid { gap: 26px; }
+  /* El móvil del hero: menos aire arriba y abajo para que la imagen no quede
+     descolgada en pantallas estrechas. */
+  .lp-hero { padding-top: 18px; padding-bottom: 26px; }
+  .lp-mock { margin-top: 6px; }
+  .lp-mock-caption { margin-top: 12px; }
   .lp-mock .phone { width: min(72vw, 248px); }
   .lp-compare .phone { width: min(46vw, 160px); }
   /* En pantallas estrechas el contenido del móvil se compacta para que no

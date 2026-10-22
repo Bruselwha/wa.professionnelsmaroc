@@ -274,3 +274,82 @@ comprobaciones:
   como una lista de menú.
 - Reflejado también en árabe (RTL): lupa e iconos cambian de lado.
 - `styles.css` → 13, `catalog.css` → 8, `CACHE_VERSION` → `cw-v15`.
+
+---
+
+# v18 · Asistente, menú, porfolio, reservas de servicio y más
+
+## 1. Asistente en lugar de WhatsApp
+
+- El botón de WhatsApp de la cabecera del catálogo pasa a ser **🤖 Asistente**,
+  que abre el asistente inteligente existente (responde sobre el catálogo y
+  recopila nombre, teléfono y necesidad). El botón flotante se mantiene.
+
+## 2. Menú del catálogo
+
+- «Todas las categorías» + buscador viven ahora **dentro de la cabecera**, entre
+  el logo y el selector de idioma.
+- En móvil la cabecera queda **solo con el logo, el título y la hamburguesa**;
+  el desplegable contiene buscador, categorías, tipo, idioma, porfolio y asistente.
+
+## 3. Porfolio
+
+- Las imágenes se ven **completas** (`object-fit: contain`) en un marco uniforme,
+  también en móvil (marco cuadrado).
+- Al pulsar un trabajo se abre un **pop-up** con imagen grande, descripción,
+  **detalles en lista**, cliente, lugar y fecha, más un botón «Quiero algo así».
+- El editor del panel incorpora esos campos (detalles, cliente, lugar, fecha).
+
+## 4. Reserva de servicios
+
+- Los servicios reservables muestran **📅 Reservar**, que abre un formulario
+  propio (distinto del de producto): calendario del mes, días cerrados según el
+  horario del negocio, **horas reales ya ocupadas** y detalles de la cita.
+- La cita viaja con el artículo en el carrito y se incluye en el mensaje de
+  WhatsApp (fecha, hora, detalles y dirección si es a domicilio).
+- Nueva función SQL `busy_slots()`: el catálogo consulta la disponibilidad sin
+  permiso de lectura sobre los pedidos.
+
+## 5. Home
+
+- Padding del móvil del hero ajustado en pantallas estrechas.
+- Las tarjetas de **TIPOS DE NEGOCIO** son botones y abren un pop-up con qué
+  vender, categorías que funcionan y funciones útiles para ese negocio.
+
+## 8. Página de servicios en el panel
+
+- Nueva sección **🔧 Servicios** con su lista (solo servicios), buscador,
+  interruptor de estado, editar y eliminar.
+- «Nuevo servicio» abre la ficha con: duración, modalidad, reserva con
+  calendario y **requisitos o información previa** (se muestran al reservar).
+- La página de Productos ahora lista solo productos.
+
+## 10. Biblioteca
+
+- Zona de **arrastrar y soltar** imágenes (también sobre la propia rejilla),
+  con resaltado al pasar por encima y aviso si el archivo no es una imagen.
+
+## SQL nuevo
+
+    supabase/schema.sql                          (actualizado)
+    supabase/actualizacion-porfolio-detalles.sql
+    supabase/actualizacion-servicios.sql
+    supabase/actualizacion-citas.sql
+
+## Caché
+
+`CACHE_VERSION` → `cw-v16`; `styles.css` 14, `landing.css` 9, `catalog.css` 9,
+`portfolio.css` 2, `i18n.js` 13, `catalog.js` 13, `dashboard.js` 14,
+`portfolio.js` 2, `assistant.js` 7, `landing.js` 1.
+
+## Pendiente (siguiente bloque)
+
+- **6. Contenido en varios idiomas**: campos traducibles en negocio, categorías,
+  productos, servicios y porfolio, con editor en el panel y respaldo al idioma
+  base.
+- **7. Editar el contenido de la demo** desde el panel.
+
+## Verificación
+
+145 comprobaciones: 77 jsdom catálogo/panel, 24 jsdom datos y 44 sobre
+PostgreSQL 16 real.

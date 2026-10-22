@@ -538,6 +538,18 @@ input, select, textarea { font-family: inherit; font-size: 1rem; }
 .cw-toast.warn { background: var(--warn); }
 .is-saving { opacity: .6; pointer-events: none; }
 
+/* Biblioteca: arrastrar y soltar */
+.lib-drop {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  border: 2px dashed var(--line-2); border-radius: 16px; background: #fff;
+  padding: 20px 16px; margin-bottom: 18px; text-align: center;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.lib-drop-ico { font-size: 1.4rem; }
+.lib-drop small { color: var(--muted); font-size: .8rem; }
+.lib-drop.over, .lib-grid.over { border-color: var(--brand); background: var(--brand-soft); }
+.lib-grid.over { outline: 2px dashed var(--brand); outline-offset: 6px; border-radius: 16px; }
+
 /* Porfolio: lista reordenable arrastrando */
 .pf-sort { list-style: none; margin: 0; padding: 0; }
 .pf-sort-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--line); background: #fff; }
@@ -593,23 +605,33 @@ input.invalid, textarea.invalid, select.invalid { border-color: var(--bad) !impo
 .info-card span { font-size: 1.4rem; }
 .info-card b { display: block; font-size: .9rem; }
 .info-card small { color: var(--muted); font-size: .82rem; }
-/* Menú del catálogo: categorías + buscador, pegados a la cabecera y fijos
-   al desplazarse. Fondo blanco para que se lea como una barra de menú y no
-   como un bloque suelto. */
-.filter-bar-cat {
-  position: sticky; top: 70px; z-index: 45;
-  background: #fff; border-bottom: 1px solid var(--line);
-  box-shadow: 0 8px 18px rgba(20, 16, 40, .045);
-}
-.filter-inner { display: flex; gap: 10px; align-items: center; padding: 10px 0; flex-wrap: wrap; }
+/* ==========================================================================
+   Cabecera del catálogo: logo · menú (categorías + buscador) · idioma/asistente
+   En móvil queda solo el logo con el título y la hamburguesa, y todo el menú
+   se despliega dentro.
+   ========================================================================== */
+.cat-head-inner { display: flex; align-items: center; gap: 14px; padding: 10px 0; }
+.cat-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.cat-brand b { display: block; line-height: 1.18; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30vw; }
+.cat-brand small { display: block; color: var(--muted); font-size: .78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30vw; }
 
-/* Selector de categorías con pinta de menú: icono a la izquierda y flecha a
-   la derecha, ambos dibujados en CSS (sin imágenes externas). */
+.cat-drop { flex: 1; min-width: 0; display: flex; justify-content: center; }
+.cat-head-actions { display: flex; align-items: center; gap: 8px; margin-inline-start: auto; }
+.cat-mobile-extra { display: none; }
+.cat-burger {
+  display: none; align-items: center; justify-content: center; margin-inline-start: auto;
+  width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--line-2);
+  background: #fff; color: var(--ink); font-size: 1.15rem; cursor: pointer;
+}
+.cat-burger:hover { border-color: var(--brand); color: var(--brand); }
+
+/* Menú: selector de categorías + buscador */
+.filter-inner { display: flex; gap: 8px; align-items: center; width: 100%; max-width: 560px; }
 .filter-inner select {
   appearance: none; -webkit-appearance: none;
   font: inherit; font-weight: 650; color: var(--ink);
   border: 1px solid var(--line-2); border-radius: 12px;
-  padding: 11px 38px 11px 40px;
+  padding: 10px 38px 10px 40px;
   background-color: #fff;
   background-image:
     url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238a8794' d='M1.4 0 6 4.6 10.6 0 12 1.4 6 7.4 0 1.4z'/%3E%3C/svg%3E"),
@@ -617,25 +639,44 @@ input.invalid, textarea.invalid, select.invalid { border-color: var(--bad) !impo
   background-repeat: no-repeat, no-repeat;
   background-position: right 14px center, left 14px center;
   background-size: 11px 7px, 15px 13px;
-  min-width: 232px; max-width: 100%;
-  cursor: pointer; transition: border-color .15s, box-shadow .15s;
+  flex: 0 1 238px; min-width: 0; cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
 }
 .filter-inner select:hover { border-color: var(--brand-2); }
 .filter-inner select:focus { outline: 0; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
 
-/* Buscador con lupa dentro del propio campo */
 .filter-inner .search {
-  flex: 1; min-width: 190px; border-radius: 12px;
-  padding: 11px 14px 11px 40px;
+  flex: 1 1 190px; min-width: 0; border-radius: 12px;
+  padding: 10px 14px 10px 40px;
   background-color: #fff;
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a8794' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.6-3.6'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: left 14px center; background-size: 16px 16px;
 }
 .filter-inner .search:focus { outline: 0; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
 
-/* En RTL, la lupa y los iconos del selector se reflejan */
-[dir="rtl"] .filter-inner .search { background-position: right 14px center; padding: 11px 40px 11px 14px; }
-[dir="rtl"] .filter-inner select { padding: 11px 40px 11px 38px; background-position: left 14px center, right 14px center; }
+[dir="rtl"] .filter-inner .search { background-position: right 14px center; padding: 10px 40px 10px 14px; }
+[dir="rtl"] .filter-inner select { padding: 10px 40px 10px 38px; background-position: left 14px center, right 14px center; }
+
+@media (max-width: 900px) {
+  .cat-head-actions { display: none; }
+  .cat-burger { display: inline-flex; }
+  .cat-brand { flex: 1; min-width: 0; }
+  .cat-brand b, .cat-brand small { max-width: 58vw; }
+  .cat-drop {
+    display: none; position: absolute; top: 100%; inset-inline: 0;
+    background: #fff; border-bottom: 1px solid var(--line);
+    box-shadow: 0 18px 30px rgba(20, 16, 40, .12);
+    padding: 12px 4vw 16px; flex-direction: column; gap: 12px; z-index: 60;
+  }
+  .cat-header.menu-open .cat-drop { display: flex; }
+  .cat-mobile-extra { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .filter-inner { flex-direction: column; align-items: stretch; max-width: none; }
+  .filter-inner select, .filter-inner .search { width: 100%; flex: 0 0 auto; }
+  .filter-inner select { padding: 12px 38px 12px 40px; }
+  .filter-inner .search { padding: 12px 14px 12px 40px; }
+  [dir="rtl"] .filter-inner .search { padding: 12px 40px 12px 14px; }
+}
+
 .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; padding: 26px 0 60px; }
 .item-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; }
 .item-media { position: relative; aspect-ratio: 4/3; cursor: pointer; background: var(--line); }

@@ -15,9 +15,14 @@
 
 .pf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; padding: 30px 0 64px; }
 .pf-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; }
-.pf-media { aspect-ratio: 4/3; background: var(--line); overflow: hidden; }
-.pf-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s ease; }
-.pf-card:hover .pf-media img { transform: scale(1.04); }
+/* La imagen se ve COMPLETA (sin recortes): el marco es uniforme y la foto
+   se ajusta por dentro. En móvil se reduce la altura del marco. */
+.pf-media { aspect-ratio: 4/3; background: #f2eef7; overflow: hidden; display: grid; place-items: center; }
+.pf-media img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.pf-card { cursor: pointer; transition: transform .18s ease, box-shadow .18s ease; }
+.pf-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.pf-card:focus-visible { outline: 3px solid var(--brand-soft); outline-offset: 2px; }
+.pf-more { display: inline-block; margin-top: 10px; font-size: .82rem; font-weight: 700; color: var(--brand); }
 .pf-ph { width: 100%; height: 100%; display: grid; place-items: center; font-size: 2rem; color: var(--muted); }
 .pf-body { padding: 16px 18px 18px; }
 .pf-name { margin: 0 0 6px; font-size: 1.05rem; line-height: 1.3; }
@@ -27,4 +32,25 @@
 @media (max-width: 720px) {
   .pf-grid { grid-template-columns: 1fr; gap: 16px; padding: 22px 0 48px; }
   .pf-hero { padding: 26px 0 30px; }
+  .pf-media { aspect-ratio: 1 / 1; }
+  .pf-body { padding: 14px 16px 16px; }
+  .pf-name { font-size: 1rem; }
+}
+
+/* Pop-up de un trabajo */
+.pf-modal { max-width: 860px; }
+.pf-modal-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 20px; align-items: start; }
+.pf-modal-media { background: #f2eef7; border-radius: 14px; overflow: hidden; display: grid; place-items: center; }
+.pf-modal-media img { width: 100%; height: auto; max-height: 60vh; object-fit: contain; display: block; }
+.pf-modal-body h4 { margin: 18px 0 8px; font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.pf-modal-body h4:first-child { margin-top: 0; }
+.pf-modal-desc { margin: 0 0 6px; color: var(--ink-2); line-height: 1.65; }
+.pf-modal-list { margin: 0; padding-inline-start: 18px; color: var(--ink-2); line-height: 1.6; }
+.pf-modal-meta { list-style: none; margin: 0; padding: 0; }
+.pf-modal-meta li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: .9rem; }
+.pf-modal-meta li:last-child { border-bottom: 0; }
+.pf-modal-meta span { color: var(--muted); }
+@media (max-width: 720px) {
+  .pf-modal-grid { grid-template-columns: 1fr; gap: 14px; }
+  .pf-modal-media img { max-height: 42vh; }
 }

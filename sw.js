@@ -1,7 +1,7 @@
 /* WA Professionnels Maroc · Service Worker
    Versión de caché única; solo se consulta la caché actual para no servir
    archivos antiguos. HTML network-first, estáticos cache-first. */
-const CACHE_VERSION = 'cw-v15';
+const CACHE_VERSION = 'cw-v16';
 const CACHE_NAME = 'wa-professionnels-maroc-' + CACHE_VERSION;
 
 const PRECACHE = [
@@ -11,23 +11,24 @@ const PRECACHE = [
   './dashboard.html',
   './catalogo.html',
   './porfolio.html',
-  './assets/css/portfolio.css?v=1',
-  './assets/js/portfolio.js?v=1',
+  './assets/css/portfolio.css?v=2',
+  './assets/js/portfolio.js?v=2',
   './manifest.webmanifest',
-  './assets/css/styles.css?v=13',
-  './assets/css/landing.css?v=8',
-  './assets/css/catalog.css?v=8',
+  './assets/css/styles.css?v=14',
+  './assets/css/landing.css?v=9',
+  './assets/css/catalog.css?v=9',
   './assets/css/assistant.css?v=6',
   './assets/js/config.js?v=10',
-  './assets/js/i18n.js?v=12',
+  './assets/js/i18n.js?v=13',
   './assets/js/store.js?v=11',
   './assets/js/panel-i18n.js?v=4',
   './assets/js/common.js?v=10',
   './assets/js/policies.js?v=7',
+  './assets/js/landing.js?v=1',
   './assets/js/auth.js?v=10',
-  './assets/js/dashboard.js?v=13',
-  './assets/js/catalog.js?v=12',
-  './assets/js/assistant.js?v=6'
+  './assets/js/dashboard.js?v=14',
+  './assets/js/catalog.js?v=13',
+  './assets/js/assistant.js?v=7'
 ];
 
 self.addEventListener('install', (e) => {

@@ -78,15 +78,16 @@
       wa.hidden = true;
     }
 
-    var cards = S.items.map(function (it) {
+    var cards = S.items.map(function (it, i) {
       var img = it.image_url
         ? '<img src="' + esc(it.image_url) + '" alt="' + esc(it.title) + '" loading="lazy">'
         : '<div class="pf-ph">🖼️</div>';
-      return '<article class="pf-card">' +
+      return '<article class="pf-card" role="button" tabindex="0" data-work="' + i + '" aria-label="' + esc(it.title) + '">' +
         '<div class="pf-media">' + img + '</div>' +
         '<div class="pf-body">' +
           '<h2 class="pf-name">' + esc(it.title) + '</h2>' +
           (it.description ? '<p class="pf-desc">' + esc(it.description) + '</p>' : '') +
+          '<span class="pf-more">' + t('port.detail') + ' →</span>' +
         '</div></article>';
     }).join('');
 
@@ -105,6 +106,46 @@
     if (foot) foot.textContent = b.name + ' · ' + t('port.title');
 
     CW.i18n.apply(root);
+
+    // Abrir la ficha del trabajo
+    $$('[data-work]', root).forEach(function (card) {
+      function open() { openWork(S.items[Number(card.dataset.work)]); }
+      card.addEventListener('click', open);
+      card.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+      });
+    });
+  }
+
+  // Pop-up con toda la información del trabajo tal como se rellenó en el panel.
+  function openWork(it) {
+    if (!it) return;
+    var lines = String(it.details || '').split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+    var meta = [];
+    if (it.client) meta.push('<li><span>' + t('port.client') + '</span><b>' + esc(it.client) + '</b></li>');
+    if (it.place) meta.push('<li><span>' + t('port.place') + '</span><b>' + esc(it.place) + '</b></li>');
+    if (it.work_date) meta.push('<li><span>' + t('port.date') + '</span><b>' + esc(it.work_date) + '</b></li>');
+
+    var html =
+      '<div class="pf-modal-grid">' +
+        '<div class="pf-modal-media">' + (it.image_url ? '<img src="' + esc(it.image_url) + '" alt="' + esc(it.title) + '">' : '<div class="pf-ph">🖼️</div>') + '</div>' +
+        '<div class="pf-modal-body">' +
+          (it.description ? '<p class="pf-modal-desc">' + esc(it.description) + '</p>' : '') +
+          (lines.length ? '<h4>' + t('port.details') + '</h4><ul class="pf-modal-list">' + lines.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul>' : '') +
+          (meta.length ? '<h4>' + t('port.info') + '</h4><ul class="pf-modal-meta">' + meta.join('') + '</ul>' : '') +
+        '</div>' +
+      '</div>';
+
+    var wa = S.biz && S.biz.whatsapp
+      ? '<a class="btn wa" target="_blank" rel="noopener" href="' + CW.api.waLink(S.biz.whatsapp, 'Hola ' + S.biz.name + ', he visto el trabajo «' + it.title + '» y quiero algo parecido.') + '">💬 ' + t('port.want') + '</a>'
+      : '';
+
+    CW.modal({
+      className: 'pf-modal',
+      title: it.title,
+      html: html,
+      footer: wa + '<button class="btn ghost" data-close>' + t('common.close') + '</button>'
+    });
   }
 
   document.addEventListener('DOMContentLoaded', function () {

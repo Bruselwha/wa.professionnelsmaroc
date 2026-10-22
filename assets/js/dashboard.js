@@ -133,7 +133,7 @@
   // ---------------------------------------------------------------------
   // Router
   // ---------------------------------------------------------------------
-  var ROUTES = ['home', 'orders', 'contacts', 'agenda', 'sales', 'products', 'categories', 'portfolio', 'library', 'settings', 'plan', 'account', 'admin'];
+  var ROUTES = ['home', 'orders', 'contacts', 'agenda', 'sales', 'products', 'services', 'categories', 'portfolio', 'library', 'settings', 'plan', 'account', 'admin'];
 
   function route() {
     var h = location.hash.replace(/^#/, '') || 'home';
@@ -147,7 +147,7 @@
     var view = $('[data-view]');
     var fn = ({
       home: renderHome, orders: renderOrders, contacts: renderContacts, agenda: renderAgenda, sales: renderSales,
-      products: renderProducts, categories: renderCategories, portfolio: renderPortfolio, library: renderLibrary,
+      products: renderProducts, services: renderServices, categories: renderCategories, portfolio: renderPortfolio, library: renderLibrary,
       settings: renderSettings, plan: renderPlan, account: renderAccount, admin: renderAdmin
     })[state.route];
     if (state.route === 'admin' && !state.isAdmin) {
@@ -518,7 +518,7 @@
       '<div class="head-actions"><input class="search" data-q placeholder="' + t('common.search') + '…">' +
       '<button class="btn primary" data-new>+ ' + t('prod.new') + '</button></div></div><div data-list></div>';
     function draw() {
-      var list = state.products.filter(function (p) { return (p.name || '').toLowerCase().includes(q.toLowerCase()); });
+      var list = state.products.filter(function (p) { return p.kind !== 'service' && (p.name || '').toLowerCase().includes(q.toLowerCase()); });
       $('[data-list]', view).innerHTML = list.length ? '<div class="table-wrap"><table class="data-table"><thead><tr>' +
         '<th></th><th>' + t('common.name') + '</th><th>' + t('prod.type') + '</th><th>' + t('common.category') + '</th><th>' + t('common.price') + '</th><th>' + t('common.status') + '</th><th></th></tr></thead><tbody>' +
         list.map(function (p) {
@@ -551,22 +551,77 @@
     draw();
   }
 
+  // ---------------------------------------------------------------------
+  // SERVICIOS (misma ficha que productos, con las opciones de reserva)
+  // ---------------------------------------------------------------------
+  function renderServices(view) {
+    if (state.sub === 'new' || state.sub === 'edit') return renderProductForm(view);
+    var q = '';
+    view.innerHTML = '<div class="view-head"><div><h1>' + t('sv.list') + '</h1><p class="muted">' + t('sv.sub') + '</p></div>' +
+      '<div class="head-actions"><input class="search" data-q placeholder="' + t('common.search') + '…">' +
+      '<button class="btn primary" data-new>+ ' + t('sv.new') + '</button></div></div><div data-list></div>';
+
+    function draw() {
+      var list = state.products.filter(function (p) {
+        return p.kind === 'service' && (p.name || '').toLowerCase().includes(q.toLowerCase());
+      });
+      $('[data-list]', view).innerHTML = list.length
+        ? '<div class="table-wrap"><table class="data-table"><thead><tr>' +
+            '<th></th><th>' + t('common.name') + '</th><th>' + t('common.category') + '</th>' +
+            '<th>' + t('common.price') + '</th><th>' + t('prod.duration') + '</th><th>' + t('common.status') + '</th><th></th>' +
+          '</tr></thead><tbody>' +
+          list.map(function (p) {
+            var img = (p.images && p.images[0]) ? '<img class="row-thumb" src="' + esc(p.images[0]) + '" alt="">' : '<div class="row-thumb ph">🔧</div>';
+            return '<tr><td>' + img + '</td><td><b>' + esc(p.name) + '</b>' +
+              (p.bookable ? ' <span class="tag">📅 ' + t('prod.bookable') + '</span>' : '') + '</td>' +
+              '<td>' + esc(catName(p.category_id)) + '</td>' +
+              '<td>' + (Number(p.price) > 0 ? money(p.price, state.biz.currency) : t('cat.public.consult')) + '</td>' +
+              '<td>' + esc(p.duration || '—') + '</td>' +
+              '<td><button class="switch' + (p.active !== false ? ' on' : '') + '" data-toggle="' + p.id + '" role="switch" aria-checked="' + (p.active !== false) + '"></button></td>' +
+              '<td class="row-actions"><button class="btn ghost small" data-edit="' + p.id + '">' + t('common.edit') + '</button>' +
+              '<button class="btn ghost small danger" data-del="' + p.id + '">' + t('common.delete') + '</button></td></tr>';
+          }).join('') + '</tbody></table></div>'
+        : '<div class="card empty-state"><div class="es-icon">🔧</div><b>' + t('sv.empty') + '</b><p>' + t('sv.sub') + '</p>' +
+          '<button class="btn primary" data-new2>+ ' + t('sv.new') + '</button></div>';
+
+      $$('[data-edit]', view).forEach(function (b) { b.addEventListener('click', function () { location.hash = '#services/edit/' + b.dataset.edit; }); });
+      $$('[data-toggle]', view).forEach(function (b) {
+        b.addEventListener('click', function () {
+          var p = state.products.find(function (x) { return x.id === b.dataset.toggle; });
+          CW.store.saveProduct({ id: p.id, active: !(p.active !== false) }).then(function () { p.active = !(p.active !== false); draw(); });
+        });
+      });
+      $$('[data-del]', view).forEach(function (b) {
+        b.addEventListener('click', function () {
+          CW.confirm('¿Eliminar este servicio?', function () {
+            CW.store.deleteProduct(b.dataset.del).then(function () { loadAll().then(draw); });
+          }, true);
+        });
+      });
+      $$('[data-new], [data-new2]', view).forEach(function (b) { b.addEventListener('click', function () { location.hash = '#services/new'; }); });
+    }
+    $('[data-q]', view).addEventListener('input', function (e) { q = e.target.value; draw(); });
+    $('[data-new]', view).addEventListener('click', function () { location.hash = '#services/new'; });
+    draw();
+  }
+
   function renderProductForm(view) {
+    var onServices = state.route === 'services';
     var editing = state.sub === 'edit' ? state.products.find(function (p) { return p.id === state.param; }) : null;
-    var p = editing || { name: '', slug: '', category_id: '', description: '', short_desc: '', sort_order: 0, price: 0, promo_price: '', images: [], active: true, kind: 'product', duration: '', modality: '', bookable: false };
+    var p = editing || { name: '', slug: '', category_id: '', description: '', short_desc: '', sort_order: 0, price: 0, promo_price: '', images: [], active: true, kind: onServices ? 'service' : 'product', duration: '', modality: '', bookable: onServices, requirements: '' };
     var images = (p.images || []).slice();
     view.innerHTML =
-      '<div class="view-head"><div><span class="crumb-mini">' + t('nav.products') + ' / ' + (editing ? t('prod.edit') : t('prod.new')) + '</span>' +
-      '<h1>' + (editing ? t('prod.edit') : t('prod.new')) + '</h1></div>' +
+      '<div class="view-head"><div><span class="crumb-mini">' + (onServices ? t('sv.list') : t('nav.products')) + ' / ' + (editing ? t('common.edit') : t('common.add')) + '</span>' +
+      '<h1>' + (onServices ? (editing ? t('common.edit') + ' · ' + t('nav.services') : t('sv.new')) : (editing ? t('prod.edit') : t('prod.new'))) + '</h1></div>' +
       '<button class="btn ghost" data-back>← ' + t('common.back') + '</button></div>' +
       '<div class="form-grid">' +
         '<div class="form-main">' +
           card(t('prod.data'), t('prod.data.desc'),
             field(t('prod.name'), '<input data-f="name" value="' + esc(p.name) + '" placeholder="Ej. Arroz extra 5 kg">') +
             field(t('prod.url'), '<input data-f="slug" value="' + esc(p.slug) + '" placeholder="arroz-extra-5-kg">') +
-            field(t('prod.type'), '<div class="segmented" data-kind>' +
+            (onServices ? '' : field(t('prod.type'), '<div class="segmented" data-kind>' +
               '<button type="button" data-k="product" class="' + (p.kind !== 'service' ? 'active' : '') + '">📦 ' + t('prod.type.product') + '</button>' +
-              '<button type="button" data-k="service" class="' + (p.kind === 'service' ? 'active' : '') + '">🔧 ' + t('prod.type.service') + '</button></div>') +
+              '<button type="button" data-k="service" class="' + (p.kind === 'service' ? 'active' : '') + '">🔧 ' + t('prod.type.service') + '</button></div>')) +
             field(t('common.category'), '<select data-f="category_id"><option value="">' + t('common.none') + '</option>' +
               state.cats.map(function (c) { return '<option value="' + c.id + '"' + (c.id === p.category_id ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</select>') +
             field(t('prod.desc') + ' <span class="muted">(' + t('common.optional') + ')</span>', '<textarea data-f="description" rows="6">' + esc(p.description) + '</textarea>') +
@@ -580,8 +635,10 @@
           '<div data-service-fields' + (p.kind === 'service' ? '' : ' hidden') + '>' +
             card(t('prod.type.service'), '', '<div class="two-col-inline">' +
               field(t('prod.duration'), '<input data-f="duration" value="' + esc(p.duration || '') + '" placeholder="Ej. 2 horas">') +
-              field(t('prod.modality'), '<input data-f="modality" value="' + esc(p.modality || '') + '" placeholder="Ej. A domicilio">') +
-              '</div><label class="check"><input type="checkbox" data-f="bookable"' + (p.bookable ? ' checked' : '') + '> ' + t('prod.bookable') + '</label>') +
+              field(t('prod.modality'), '<input data-f="modality" value="' + esc(p.modality || '') + '" placeholder="Ej. A domicilio / En el local / Online">') +
+              '</div>' +
+              '<label class="check"><input type="checkbox" data-f="bookable"' + (p.bookable ? ' checked' : '') + '> ' + t('prod.bookable') + '</label>' +
+              field(t('sv.requirements'), '<textarea data-f="requirements" rows="3" maxlength="400">' + esc(p.requirements || '') + '</textarea><small class="muted">' + t('sv.requirements.hint') + '</small>')) +
           '</div>' +
           card(t('prod.images.title'), t('prod.images.hint'),
             '<div class="img-picker" data-img-picker></div>' +
@@ -605,8 +662,9 @@
       $$('[data-rm]', view).forEach(function (b) { b.addEventListener('click', function () { images.splice(Number(b.dataset.rm), 1); drawImages(); }); });
     }
     drawImages();
-    $('[data-back]', view).addEventListener('click', function () { location.hash = '#products'; });
-    $('[data-back2]', view).addEventListener('click', function () { location.hash = '#products'; });
+    var backRoute = onServices ? '#services' : '#products';
+    $('[data-back]', view).addEventListener('click', function () { location.hash = backRoute; });
+    $('[data-back2]', view).addEventListener('click', function () { location.hash = backRoute; });
     $$('[data-kind] button', view).forEach(function (b) {
       b.addEventListener('click', function () {
         $$('[data-kind] button', view).forEach(function (x) { x.classList.remove('active'); });
@@ -622,7 +680,7 @@
     });
     $('[data-save]', view).addEventListener('click', function () {
       function val(f) { var el = $('[data-f="' + f + '"]', view); return el ? el.value : ''; }
-      var kind = $('[data-kind] button.active', view).dataset.k;
+      var kind = onServices ? 'service' : $('[data-kind] button.active', view).dataset.k;
       var obj = {
         id: editing ? editing.id : undefined, business_id: state.biz.id,
         name: val('name').trim(), slug: CW.store.slugify(val('slug') || val('name')),
@@ -632,10 +690,18 @@
         promo_price: val('promo_price') === '' ? null : Number(val('promo_price')),
         images: images, active: p.active !== false, kind: kind,
         duration: kind === 'service' ? val('duration') : '', modality: kind === 'service' ? val('modality') : '',
-        bookable: kind === 'service' ? !!$('[data-f="bookable"]', view).checked : false
+        bookable: kind === 'service' ? !!$('[data-f="bookable"]', view).checked : false,
+        requirements: kind === 'service' ? val('requirements') : ''
       };
       if (!obj.name) { CW.toast(t('common.required')); return; }
-      CW.store.saveProduct(obj).then(function () { CW.toast(t('common.save')); location.hash = '#products'; loadAll().then(route); });
+      CW.store.saveProduct(obj).then(function () {
+        CW.toast(t('common.save'), 'ok');
+        location.hash = backRoute;
+        loadAll().then(route);
+      }).catch(function (err) {
+        console.warn('[CW] No se pudo guardar el artículo:', err);
+        CW.toast(t('set.save.error'), 'error');
+      });
     });
   }
 
@@ -891,7 +957,13 @@
       '<button class="btn ghost" data-back>← ' + t('common.back') + '</button></div>' +
       card(t('port.item'), '',
         field(t('common.name'), '<input data-f="title" maxlength="120" value="' + esc(it.title) + '" placeholder="Ej. Encimera de mármol en cocina">') +
-        field(t('port.desc'), '<textarea data-f="description" rows="4" maxlength="220">' + esc(it.description || '') + '</textarea><small class="muted">' + t('port.desc.hint') + '</small>')
+        field(t('port.desc'), '<textarea data-f="description" rows="3" maxlength="220">' + esc(it.description || '') + '</textarea><small class="muted">' + t('port.desc.hint') + '</small>') +
+        field(t('port.details'), '<textarea data-f="details" rows="4" placeholder="Material: mármol blanco&#10;Medidas: 3,2 m&#10;Acabado: pulido">' + esc(it.details || '') + '</textarea><small class="muted">' + t('port.details.hint') + '</small>') +
+        '<div class="two-col-inline">' +
+          field(t('port.client'), '<input data-f="client" value="' + esc(it.client || '') + '">') +
+          field(t('port.date'), '<input data-f="work_date" placeholder="2025" value="' + esc(it.work_date || '') + '">') +
+        '</div>' +
+        field(t('port.place'), '<input data-f="place" value="' + esc(it.place || '') + '">')
       ) +
       card(t('port.image'), '',
         '<div class="img-slot ' + (it.image_url ? 'filled' : '') + '" data-item-img style="max-width:280px">' +
@@ -922,6 +994,10 @@
         title: title,
         description: val('description').trim().slice(0, 220),
         image_url: view._img || it.image_url || '',
+        details: val('details').trim(),
+        client: val('client').trim(),
+        place: val('place').trim(),
+        work_date: val('work_date').trim(),
         sort_order: editing ? Number(it.sort_order || 0) : state.portfolio.length,
         active: $('[data-f="active"]', view).checked
       };
@@ -945,6 +1021,10 @@
   function renderLibrary(view) {
     view.innerHTML = '<div class="view-head"><div><h1>' + t('nav.library') + '</h1></div>' +
       '<label class="btn primary">+ ' + t('common.add') + '<input type="file" accept="image/*" multiple data-upload hidden></label></div>' +
+      '<div class="lib-drop" data-drop>' +
+        '<span class="lib-drop-ico">⬇️</span>' +
+        '<b>' + t('lib.drop') + '</b><small>' + t('lib.drop.hint') + '</small>' +
+      '</div>' +
       '<div class="lib-grid" data-lib>' + libCards() + '</div>';
     function libCards() {
       if (!state.library.length) return '<div class="card empty-state" style="grid-column:1/-1"><div class="es-icon">🖼️</div><b>' + t('common.none') + '</b></div>';
@@ -952,12 +1032,44 @@
         return '<div class="lib-item"><img src="' + esc(i.url) + '" alt=""><button class="lib-del" data-del="' + i.id + '">✕</button></div>';
       }).join('');
     }
-    $('[data-upload]', view).addEventListener('change', function (e) {
-      var files = Array.prototype.slice.call(e.target.files);
+    function uploadFiles(files) {
+      files = Array.prototype.slice.call(files || []).filter(function (f) { return /^image\//.test(f.type); });
+      if (!files.length) { CW.toast(t('lib.onlyimages'), 'warn'); return; }
       CW.toast(t('common.loading'));
       Promise.all(files.map(function (f) { return CW.store.uploadImage(state.biz.id, f); })).then(function () {
-        CW.toast(t('common.save')); loadAll().then(function () { $('[data-lib]', view).innerHTML = libCards(); bindLib(); });
+        CW.toast(t('common.save'), 'ok'); loadAll().then(function () { $('[data-lib]', view).innerHTML = libCards(); bindLib(); });
+      }).catch(function (err) {
+        console.warn('[CW] Error al subir imágenes:', err);
+        CW.toast(t('set.save.error'), 'error');
       });
+    }
+    $('[data-upload]', view).addEventListener('change', function (e) { uploadFiles(e.target.files); });
+
+    // Arrastrar y soltar imágenes sobre la biblioteca (o sobre el recuadro).
+    var drop = $('[data-drop]', view), grid = $('[data-lib]', view);
+    [drop, grid].forEach(function (zone) {
+      if (!zone) return;
+      var depth = 0;
+      ['dragenter', 'dragover'].forEach(function (ev) {
+        zone.addEventListener(ev, function (e) {
+          e.preventDefault(); e.stopPropagation();
+          if (ev === 'dragenter') depth++;
+          zone.classList.add('over');
+        });
+      });
+      ['dragleave', 'drop'].forEach(function (ev) {
+        zone.addEventListener(ev, function (e) {
+          e.preventDefault(); e.stopPropagation();
+          if (ev === 'dragleave') { depth--; if (depth > 0) return; }
+          depth = 0;
+          zone.classList.remove('over');
+          if (ev === 'drop' && e.dataTransfer && e.dataTransfer.files) uploadFiles(e.dataTransfer.files);
+        });
+      });
+    });
+    // Sin esto, soltar fuera de la zona abre la imagen en el navegador.
+    ['dragover', 'drop'].forEach(function (ev) {
+      document.addEventListener(ev, function (e) { e.preventDefault(); });
     });
     function bindLib() {
       $$('[data-del]', view).forEach(function (b) {

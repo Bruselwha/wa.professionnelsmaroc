@@ -468,6 +468,27 @@
       });
     },
 
+    // Horas ya ocupadas de un día (solo horas, nunca datos del cliente).
+    // La función SQL es SECURITY DEFINER para que el catálogo público pueda
+    // consultar la disponibilidad sin permiso de lectura sobre `orders`.
+    busySlots: function (businessId, day) {
+      if (!day) return Promise.resolve([]);
+      if (CW.isDemo) {
+        return Promise.resolve((LS.read('orders', []) || []).filter(function (o) {
+          return o.business_id === businessId && o.appointment_at;
+        }).map(function (o) {
+          var d = new Date(o.appointment_at);
+          if (isNaN(d)) return null;
+          var ymd = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+          return ymd === day ? ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) : null;
+        }).filter(Boolean));
+      }
+      return sb.rpc('busy_slots', { bid: businessId, day: day }).then(function (r) {
+        if (r.error) throw r.error;
+        return (r.data || []).map(function (x) { return typeof x === 'string' ? x : x.slot; });
+      }).catch(function () { return []; });
+    },
+
     updateOrderStatus: function (id, status) {
       if (CW.isDemo) {
         var arr = LS.read('orders', []); arr.forEach(function (o) { if (o.id === id) o.status = status; }); LS.write('orders', arr);
