@@ -741,7 +741,8 @@
             return '<label class="field"><span>' + esc(f.label) + '</span>' + input + '</label>';
           }).join('') +
         '</div>';
-      }).join('') + '</div></section>';
+      }).join('') + '</div>' +
+      '<p class="tr-status" data-tr-status role="status" aria-live="polite" hidden></p></section>';
   }
 
   // Botón «Traducir con IA»: toma el texto base y rellena los campos de
@@ -749,7 +750,22 @@
   function bindTrAi(view, pairs) {
     var btn = $('[data-ai-tr]', view);
     if (!btn || !CW.translate) return;
+    var status = $('[data-tr-status]', view);
+
+    function setStatus(txt) {
+      if (!status) return;
+      status.hidden = !txt;
+      status.textContent = txt || '';
+      status.classList.remove('error');
+    }
+
     btn.addEventListener('click', function () {
+      if (btn.dataset.busy === '1') return;              // ya está traduciendo
+      if (navigator.onLine === false) {
+        CW.toast(t('tr.ai.offline'), 'error');
+        return;
+      }
+
       var data = pairs.map(function (p) {
         var el = $(p.from, view);
         return { key: p.key, text: el ? el.value : '' };
@@ -758,12 +774,35 @@
       if (!data.length) { CW.toast(t('tr.ai.empty'), 'warn'); return; }
 
       var label = btn.innerHTML;
+      var total = data.length * 2;                        // francés + árabe
+      btn.dataset.busy = '1';
       btn.disabled = true;
+      btn.setAttribute('aria-busy', 'true');
       btn.innerHTML = '⏳ ' + t('tr.ai.working');
+      setStatus(t('tr.ai.progress', { done: 0, total: total }));
 
-      CW.translate.fill(data, function (res) {
+      function release() {
+        btn.dataset.busy = '';
         btn.disabled = false;
+        btn.removeAttribute('aria-busy');
         btn.innerHTML = label;
+        setStatus('');
+      }
+
+      // Red de seguridad: si la API se queda colgada y no llama al callback,
+      // devolvemos el botón a su estado normal pasado el tiempo máximo.
+      var guard = setTimeout(function () {
+        if (btn.dataset.busy !== '1') return;
+        release();
+        CW.toast(t('tr.ai.error'), 'error');
+        if (status) { status.hidden = false; status.textContent = t('tr.ai.error'); status.classList.add('error'); }
+      }, (Number(CW.config.translateTimeout || 12000) + 5000) * Math.max(1, data.length));
+
+      CW.translate.fill(data, function (res, stats) {
+        clearTimeout(guard);
+        release();
+        stats = stats || { total: total, translated: 0, failed: 0 };
+
         var n = 0;
         ['fr', 'ar'].forEach(function (lang) {
           Object.keys(res[lang] || {}).forEach(function (k) {
@@ -771,9 +810,23 @@
             if (el && !el.value.trim()) { el.value = res[lang][k]; n++; }
           });
         });
+
+        if (!stats.translated) {
+          CW.toast(t('tr.ai.error'), 'error');
+          if (status) { status.hidden = false; status.textContent = t('tr.ai.error'); status.classList.add('error'); }
+          return;
+        }
+        if (stats.failed) {
+          CW.toast(t('tr.ai.partial', { n: n, failed: stats.failed }), 'warn');
+          if (status) { status.hidden = false; status.textContent = t('tr.ai.partial', { n: n, failed: stats.failed }); status.classList.add('error'); }
+          return;
+        }
         if (n) CW.toast(t('tr.ai.done', { n: n }), 'ok');
         else CW.toast(t('tr.ai.none'), 'warn');
+      }, function (done, tot) {
+        setStatus(t('tr.ai.progress', { done: done, total: tot }));
       });
+
     });
   }
 
@@ -1872,6 +1925,7 @@
       '<button class="btn soft small" data-demo-ai>✨ ' + t('demo.ai') + '</button>' +
       '<button class="btn ghost small" data-demo-reset>' + t('demo.reset') + '</button>' +
       '<button class="btn primary small" data-demo-save>' + t('common.save') + '</button></div></div>' +
+      '<p class="tr-status" data-demo-ai-status role="status" aria-live="polite" hidden></p>' +
       '<div data-demo-body><p class="muted">' + t('common.loading') + '</p></div></section>';
 
     CW.store.getSiteSettings().then(function (s) {
@@ -2072,6 +2126,10 @@
 
     $('[data-demo-ai]', body).addEventListener('click', function () {
       var btn = $('[data-demo-ai]', body);
+      var note = $('[data-demo-ai-status]', body);
+      if (btn.dataset.busy === '1') return;               // ya está traduciendo
+      if (navigator.onLine === false) { CW.toast(t('tr.ai.offline'), 'error'); return; }
+
       var d = body._demo;
 
       // Todo el texto base que se puede traducir, con su ruta exacta.
@@ -2098,26 +2156,71 @@
 
       if (!list.length) { CW.toast(t('tr.ai.empty'), 'warn'); return; }
 
-      var total = list.length, i = 0, filled = 0;
+      var total = list.length, i = 0, filled = 0, failed = 0;
+      btn.dataset.busy = '1';
       btn.disabled = true;
+      btn.setAttribute('aria-busy', 'true');
       btn.innerHTML = '⏳ 0/' + total;
 
-      (function next() {
-        if (i >= list.length) {
-          btn.disabled = false;
-          btn.innerHTML = '✨ ' + t('demo.ai');
-          draw();
-          CW.toast(filled ? t('tr.ai.done', { n: filled }) : t('tr.ai.none'), filled ? 'ok' : 'warn');
+      function status(txt, isError) {
+        if (!note) return;
+        note.hidden = !txt;
+        note.textContent = txt || '';
+        note.classList.toggle('error', !!isError);
+      }
+      status(t('tr.ai.progress', { done: 0, total: total }));
+
+      var guard = setTimeout(function () {
+        if (btn.dataset.busy !== '1') return;
+        finish(true);
+      }, (Number(CW.config.translateTimeout || 12000) + 5000) * Math.max(1, list.length / 2));
+
+      function finish(aborted) {
+        clearTimeout(guard);
+        btn.dataset.busy = '';
+        btn.disabled = false;
+        btn.removeAttribute('aria-busy');
+        btn.innerHTML = '✨ ' + t('demo.ai');
+        draw();
+        if (aborted) {
+          status(t('tr.ai.error'), true);
+          CW.toast(t('tr.ai.error'), 'error');
           return;
         }
+        if (!filled) {
+          status(t('tr.ai.error'), true);
+          CW.toast(t('tr.ai.error'), 'error');
+          return;
+        }
+        if (failed) {
+          status(t('tr.ai.partial', { n: filled, failed: failed }), true);
+          CW.toast(t('tr.ai.partial', { n: filled, failed: failed }), 'warn');
+          return;
+        }
+        status('');
+        CW.toast(t('tr.ai.done', { n: filled }), 'ok');
+      }
+
+      (function next() {
+        if (i >= list.length) return finish(false);
         var job = list[i++];
         var path = job.base + '.i18n.' + job.lang + '.' + job.field;
-        if (String(getPath(body._demo, path) || '').trim()) return next(); // no pisa lo escrito
-        CW.translate.text(job.text, job.lang, CW.config.defaultLang || 'es').then(function (out) {
-          if (out) { setPath(body._demo, path, out); filled++; }
+        if (String(getPath(body._demo, path) || '').trim()) {   // no pisa lo escrito
           btn.innerHTML = '⏳ ' + i + '/' + total;
+          status(t('tr.ai.progress', { done: i, total: total }));
+          return next();
+        }
+        CW.translate.text(job.text, job.lang, CW.config.defaultLang || 'es').then(function (out) {
+          if (out) { setPath(body._demo, path, out); filled++; } else failed++;
+          btn.innerHTML = '⏳ ' + i + '/' + total;
+          status(t('tr.ai.progress', { done: i, total: total }));
           next();
-        }).catch(function () { btn.innerHTML = '⏳ ' + i + '/' + total; next(); });
+        }).catch(function () {
+          failed++;
+          btn.innerHTML = '⏳ ' + i + '/' + total;
+          status(t('tr.ai.progress', { done: i, total: total }));
+          next();
+        });
       })();
     });
 

@@ -488,3 +488,49 @@ reflejada en el catálogo público), 24 de datos y 48 sobre PostgreSQL 16 real.
 139 comprobaciones: 115 jsdom de catálogo/panel (incluye la traducción con IA,
 el guardado en la demo y el desplegable de tipo), 24 de datos y 48 sobre
 PostgreSQL 16 real.
+
+---
+
+# v22 · Botón «Traducir con IA» a prueba de fallos
+
+Revisado en los cinco sitios donde existe (categoría, producto/servicio,
+trabajo del porfolio, información del negocio y demo).
+
+## Aviso mientras traduce
+
+- El botón pasa a **⏳ Traduciendo…**, queda desactivado y con `aria-busy`.
+- Dentro de la tarjeta de traducciones aparece una línea de estado en vivo
+  (`role="status"`, `aria-live="polite"`) con el progreso **n/total**, que se
+  actualiza con cada campo traducido. En la demo el botón muestra además el
+  contador `⏳ 3/18`.
+- Al terminar, el aviso se oculta solo.
+
+## Control de errores
+
+- **Tiempo máximo por petición** de 12 s (`config.translateTimeout`) con
+  `AbortController`: si la API no responde, se corta y se sigue.
+- Se valida la respuesta: HTTP no-2xx, `responseStatus` de MyMemory distinto de
+  200, texto vacío o avisos de cuota se tratan como fallo.
+- **Sin conexión**: si `navigator.onLine` es false, avisa antes de empezar.
+- **Todo falla** → aviso rojo y toast «No se pudo conectar con el traductor…»,
+  y el botón vuelve a estar disponible.
+- **Falla una parte** → «Se tradujeron N campos; M fallaron».
+- **Red de seguridad** con temporizador global: si la API se queda colgada y no
+  llama al callback, el botón se libera igualmente.
+
+## Sin doble pulsación
+
+- Bandera `data-busy` en el propio botón además de `disabled`: tres clics
+  seguidos producen **una sola** llamada a la API.
+- El botón se libera por un único camino (`release()`), así que no hay forma de
+  dejarlo bloqueado.
+
+## Caché
+
+`CACHE_VERSION` → `cw-v20`; `styles.css` 18, `i18n.js` 17, `dashboard.js` 18,
+`translate.js` 2.
+
+## Verificación
+
+150 comprobaciones: 126 jsdom de catálogo/panel (incluye doble clic, aviso de
+progreso, error total y error parcial), 24 de datos y 48 sobre PostgreSQL 16.
