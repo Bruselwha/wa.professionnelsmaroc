@@ -365,136 +365,156 @@
   function parseYmd(v) { var p = String(v).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
   function workDays(biz) { return (biz.work_days && biz.work_days.length) ? biz.work_days : [1, 2, 3, 4, 5, 6]; }
 
+  var BK = { modal: null, service: null };
+
+  function bkToday() { return ymd(new Date()); }
+
+  function bookingServices() {
+    return S.products.filter(function (p) { return p.kind === 'service'; });
+  }
+
+  // Formulario de reserva con la lógica de disponibilidad del negocio:
+  // días cerrados, horas ya ocupadas y citas de hoy ya pasadas.
   function openBooking(id) {
-    var p = S.products.find(function (x) { return x.id === id; });
-    if (!p) return;
-    BK.item = p; BK.date = ''; BK.time = ''; BK.busy = [];
-    var today = new Date();
-    BK.month = new Date(today.getFullYear(), today.getMonth(), 1);
+    var services = bookingServices();
+    var pre = id ? services.find(function (x) { return x.id === id; }) : null;
+    BK.service = pre || (services.length === 1 ? services[0] : null);
 
     var m = CW.modal({
       className: 'bk-modal',
-      title: t('bk.title'),
+      title: '📅 ' + t('bk.title'),
       html:
-        '<div class="bk-service">' +
-          '<div class="bk-service-thumb">' + ((p.images && p.images[0]) ? '<img src="' + esc(p.images[0]) + '" alt="">' : '🛠️') + '</div>' +
-          '<div class="bk-service-info"><b>' + esc(CW.tx(p, 'name')) + '</b>' +
-            '<small>' + [p.duration, p.modality].filter(Boolean).map(esc).join(' · ') + '</small>' +
-            '<span class="bk-price">' + (Number(p.price) > 0 ? money(p.price, S.biz.currency) : t('cat.public.consult')) + '</span>' +
-          '</div>' +
+        '<div class="bk-field"><label class="bk-label"><span class="bk-num">1</span>' + t('bk.service') + '</label>' +
+          '<select data-bk-service>' +
+            '<option value="">' + t('bk.selectService') + '</option>' +
+            services.map(function (p) {
+              return '<option value="' + p.id + '"' + (BK.service && p.id === BK.service.id ? ' selected' : '') + '>' +
+                esc(CW.tx(p, 'name')) + (Number(p.price) > 0 ? ' · ' + money(p.price, S.biz.currency) : '') + '</option>';
+            }).join('') +
+          '</select>' +
         '</div>' +
-        (p.requirements ? '<p class="bk-req">ℹ️ ' + esc(p.requirements) + '</p>' : '') +
-        '<div class="bk-grid">' +
-          '<div class="bk-cal"><div class="bk-cal-head">' +
-            '<button type="button" class="icon-btn" data-bk-prev aria-label="' + t('bk.prev') + '">‹</button>' +
-            '<b data-bk-month></b>' +
-            '<button type="button" class="icon-btn" data-bk-next aria-label="' + t('bk.next') + '">›</button>' +
-          '</div><div class="bk-days-head">' + ['L', 'M', 'X', 'J', 'V', 'S', 'D'].map(function (d) { return '<span>' + d + '</span>'; }).join('') + '</div>' +
-          '<div class="bk-days" data-bk-days></div>' +
-          '<p class="muted bk-legend">' + t('bk.legend') + '</p></div>' +
-          '<div class="bk-slots"><h4>' + t('bk.slots') + '</h4><div class="bk-slot-list" data-bk-slotlist>' +
-            '<p class="muted">' + t('bk.pickday') + '</p></div>' +
-            '<label class="field"><span>' + t('bk.notes') + '</span><textarea data-bk-notes rows="2" maxlength="240"></textarea></label>' +
-            '<label class="field bk-address" hidden><span>' + t('bk.address') + '</span><input data-bk-address></label>' +
-          '</div>' +
+        '<p class="bk-req" data-bk-req hidden></p>' +
+        '<div class="bk-two">' +
+          '<div class="bk-field"><label class="bk-label"><span class="bk-num">2</span>' + t('bk.date') + '</label>' +
+            '<input type="date" data-bk-date min="' + bkToday() + '" value="' + bkToday() + '"></div>' +
+          '<div class="bk-field"><label class="bk-label"><span class="bk-num">3</span>' + t('bk.hour') + '</label>' +
+            '<select data-bk-hour><option value="">' + t('bk.chooseHour') + '</option></select></div>' +
         '</div>' +
-        '<p class="bk-summary muted" data-bk-sum>' + t('bk.nothing') + '</p>',
-      footer: '<button class="btn ghost" data-close>' + t('common.cancel') + '</button>' +
-              '<button class="btn primary" data-bk-confirm disabled>✓ ' + t('bk.confirm') + '</button>'
+        '<p class="bk-hint" data-bk-hint hidden></p>' +
+        '<div class="bk-field"><label class="bk-label"><span class="bk-num">4</span>' + t('bk.yourName') + '</label>' +
+          '<input data-bk-name autocomplete="name" placeholder="' + t('bk.namePh') + '"></div>' +
+        '<div class="bk-field"><label class="bk-label"><span class="bk-num">5</span>WhatsApp</label>' +
+          '<input data-bk-phone inputmode="tel" autocomplete="tel" placeholder="600123456"></div>' +
+        '<div class="bk-field" data-bk-addr-wrap><label class="bk-label"><span class="bk-num">6</span>' + t('bk.address') + '</label>' +
+          '<input data-bk-address placeholder="' + t('bk.addressPh') + '"></div>' +
+        '<div class="bk-field"><label class="bk-label"><span class="bk-num">7</span>' + t('bk.notes') + ' <span class="muted">(' + t('common.optional') + ')</span></label>' +
+          '<textarea data-bk-notes rows="2" placeholder="' + t('bk.notesPh') + '"></textarea></div>' +
+        '<button type="button" class="bk-submit" data-bk-confirm>💬 ' + t('bk.confirmWa') + '</button>',
+      footer: ''
     });
     BK.modal = m;
-    if (/domicilio|a domicilio|home/i.test(String(p.modality || '')) || /delivery/.test(String(S.biz.delivery || ''))) {
-      $('.bk-address', m.modal).hidden = false;
+
+    var serviceSel = $('[data-bk-service]', m.modal);
+    var dateEl = $('[data-bk-date]', m.modal);
+    var hourEl = $('[data-bk-hour]', m.modal);
+
+    function needAddress(p) {
+      return /domicilio|domicile|home|à domicile/i.test(String(p && p.modality || '')) ||
+             /delivery/.test(String(S.biz.delivery || ''));
     }
-    $('[data-bk-prev]', m.modal).addEventListener('click', function () { BK.month.setMonth(BK.month.getMonth() - 1); drawBookingCalendar(m.modal); });
-    $('[data-bk-next]', m.modal).addEventListener('click', function () { BK.month.setMonth(BK.month.getMonth() + 1); drawBookingCalendar(m.modal); });
-    $('[data-bk-confirm]', m.modal).addEventListener('click', confirmBooking);
-    drawBookingCalendar(m.modal);
-  }
+    function syncAddress() {
+      var p = services.find(function (x) { return x.id === serviceSel.value; });
+      var wrap = $('[data-bk-addr-wrap]', m.modal);
+      var input = $('[data-bk-address]', m.modal);
+      var required = needAddress(p);
+      wrap.classList.toggle('req', required);
+      input.setAttribute('data-required', required ? '1' : '0');
 
-  function drawBookingCalendar(modal) {
-    var lang = (CW.i18n && CW.i18n.lang) || 'es';
-    var fmt = new Intl.DateTimeFormat(lang, { month: 'long', year: 'numeric' });
-    $('[data-bk-month]', modal).textContent = fmt.format(BK.month);
-
-    var first = new Date(BK.month.getFullYear(), BK.month.getMonth(), 1);
-    var startOffset = (first.getDay() + 6) % 7; // lunes = 0
-    var daysInMonth = new Date(BK.month.getFullYear(), BK.month.getMonth() + 1, 0).getDate();
-    var today = new Date(); today.setHours(0, 0, 0, 0);
-    var html = '';
-    for (var i = 0; i < startOffset; i++) html += '<span class="bk-day empty"></span>';
-    for (var d = 1; d <= daysInMonth; d++) {
-      var date = new Date(BK.month.getFullYear(), BK.month.getMonth(), d);
-      var past = date < today;
-      var closed = workDays(S.biz).indexOf(date.getDay()) === -1;
-      var sel = BK.date === ymd(date);
-      html += '<button type="button" class="bk-day' + (past || closed ? ' off' : '') + (sel ? ' sel' : '') + '"' +
-        (past || closed ? ' disabled' : '') + ' data-bk-day="' + ymd(date) + '">' + d + '</button>';
+      // Requisitos que el negocio haya escrito para ese servicio.
+      var req = $('[data-bk-req]', m.modal);
+      var text = p ? String(CW.tx(p, 'requirements') || '').trim() : '';
+      req.hidden = !text;
+      req.textContent = text ? 'ℹ️ ' + text : '';
     }
-    var box = $('[data-bk-days]', modal);
-    box.innerHTML = html;
-    $$('[data-bk-day]', box).forEach(function (b) {
-      b.addEventListener('click', function () { selectBookingDay(modal, b.dataset.bkDay); });
-    });
-  }
 
-  function selectBookingDay(modal, day) {
-    BK.date = day; BK.time = '';
-    drawBookingCalendar(modal);
-    var list = $('[data-bk-slotlist]', modal);
-    list.innerHTML = '<p class="muted">' + t('common.loading') + '</p>';
-    CW.store.busySlots(S.biz.id, day).then(function (busy) {
-      BK.busy = busy || [];
-      var slots = CW.api.timeSlots(S.biz, day);
-      if (day === ymd(new Date())) {
-        var now = new Date();
-        slots = slots.filter(function (s) {
-          var hm = s.split(':'); var t2 = new Date(); t2.setHours(+hm[0], +hm[1], 0, 0);
-          return t2 > now;
-        });
-      }
-      var free = slots.filter(function (s) { return BK.busy.indexOf(s) === -1; });
-      list.innerHTML = free.length
-        ? free.map(function (s) {
-            return '<button type="button" class="bk-slot' + (BK.time === s ? ' sel' : '') + '" data-bk-slot="' + s + '">' + s + '</button>';
-          }).join('')
-        : '<p class="muted">' + t('bk.full') + '</p>';
-      $$('[data-bk-slot]', list).forEach(function (b) {
-        b.addEventListener('click', function () {
-          BK.time = b.dataset.bkSlot;
-          $$('[data-bk-slot]', list).forEach(function (x) { x.classList.toggle('sel', x === b); });
-          updateBookingSummary(modal);
-        });
+    function loadSlots() {
+      var day = dateEl.value;
+      hourEl.innerHTML = '<option value="">' + t('common.loading') + '</option>';
+      var hint = $('[data-bk-hint]', m.modal);
+      hint.hidden = true;
+      if (!day) return;
+      CW.store.busySlots(S.biz.id, day).then(function (busy) {
+        var slots = CW.api.timeSlots(S.biz, day);
+        if (day === bkToday()) {
+          var now = new Date();
+          slots = slots.filter(function (h) {
+            var p = h.split(':');
+            var t2 = new Date(); t2.setHours(+p[0], +p[1], 0, 0);
+            return t2 > now;
+          });
+        }
+        busy = busy || [];
+        var free = slots.filter(function (h) { return busy.indexOf(h) === -1; });
+        if (!free.length) {
+          hourEl.innerHTML = '<option value="">—</option>';
+          hint.hidden = false;
+          hint.textContent = slots.length ? t('bk.full') : t('bk.closedDay');
+          return;
+        }
+        hourEl.innerHTML = '<option value="">' + t('bk.chooseHour') + '</option>' +
+          free.map(function (h) { return '<option value="' + h + '">' + h + '</option>'; }).join('');
       });
-      updateBookingSummary(modal);
-    });
-  }
-
-  function updateBookingSummary(modal) {
-    var sum = $('[data-bk-sum]', modal);
-    var ok = !!(BK.date && BK.time);
-    if (sum) {
-      sum.textContent = ok
-        ? t('bk.summary', { date: new Date(BK.date + 'T00:00:00').toLocaleDateString((CW.i18n && CW.i18n.lang) || 'es', { weekday: 'long', day: 'numeric', month: 'long' }), time: BK.time })
-        : t('bk.nothing');
-      sum.classList.toggle('ok', ok);
     }
-    var btn = $('[data-bk-confirm]', modal);
-    if (btn) btn.disabled = !ok;
-  }
 
-  function confirmBooking() {
-    if (!BK.date || !BK.time) return;
-    var box = BK.modal && BK.modal.modal;
-    var notes = (box && $('[data-bk-notes]', box) || {}).value || '';
-    var addr = (box && $('[data-bk-address]', box) || {}).value || '';
-    var p = BK.item;
-    addToCart(p.id, {
-      appointment: { date: BK.date, time: BK.time, notes: notes.trim(), address: addr.trim() }
+    serviceSel.addEventListener('change', function () { syncAddress(); loadSlots(); });
+    dateEl.addEventListener('change', loadSlots);
+    syncAddress();
+    loadSlots();
+
+    $('[data-bk-confirm]', m.modal).addEventListener('click', function () {
+      var btn = $('[data-bk-confirm]', m.modal);
+      var service = services.find(function (x) { return x.id === serviceSel.value; });
+      var name = ($('[data-bk-name]', m.modal).value || '').trim();
+      var phone = ($('[data-bk-phone]', m.modal).value || '').trim();
+      var address = ($('[data-bk-address]', m.modal).value || '').trim();
+      var notes = ($('[data-bk-notes]', m.modal).value || '').trim();
+      var date = dateEl.value, hour = hourEl.value;
+      var addrRequired = $('[data-bk-address]', m.modal).getAttribute('data-required') === '1';
+
+      if (!service || !date || !hour || !name || !phone || (addrRequired && !address)) {
+        CW.toast(t('bk.required'), 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      var order = {
+        business_id: S.biz.id,
+        code: CW.store.newOrderCode(),
+        customer_name: name, customer_phone: phone,
+        customer_address: address, customer_city: '',
+        note: notes,
+        items: [{
+          name: CW.tx(service, 'name'), qty: 1, price: eff(service), kind: 'service',
+          duration: service.duration || '', modality: service.modality || '',
+          appointment: { date: date, time: hour, notes: notes, address: address }
+        }],
+        subtotal: eff(service), fee: 0, total: eff(service),
+        appointment_at: new Date(date + 'T' + hour + ':00').toISOString(),
+        status: 'new'
+      };
+      var msg = CW.api.orderMessage(S.biz, order);
+      var save = (S.biz.id === 'demo' && CW.isDemo) ? Promise.resolve(order) : CW.store.createOrder(order);
+
+      save.then(function () {
+        if (S.biz.whatsapp) window.open(CW.api.waLink(S.biz.whatsapp, msg), '_blank');
+        m.close();
+        CW.toast(t('bk.added'), 'ok');
+      }).catch(function (err) {
+        btn.disabled = false;
+        console.warn('[CW] No se pudo guardar la reserva:', err);
+        CW.toast(t('bk.error'), 'error');
+      });
     });
-    BK.modal.close();
-    openCart();
-    CW.toast(t('bk.added'), 'ok');
   }
 
   // ---- Carrito --------------------------------------------------------

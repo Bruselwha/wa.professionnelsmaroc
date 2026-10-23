@@ -579,3 +579,38 @@ progreso, error total y error parcial), 24 de datos y 48 sobre PostgreSQL 16.
 
 206 comprobaciones: 134 jsdom de catálogo/panel/home, 24 de datos y 48 sobre
 PostgreSQL 16 real.
+
+---
+
+# v24 · Formulario de reserva como la referencia
+
+Sustituido el calendario propio por el **formulario de una sola pantalla** de la
+captura, con los campos numerados:
+
+1. ¿Qué servicio necesitas? (desplegable con todos los servicios)
+2. Fecha · 3. Hora (solo horas libres de verdad)
+4. Tu nombre · 5. WhatsApp
+6. Dirección (obligatoria solo si el servicio es a domicilio)
+7. Notas (opcional)
+
+Y el botón verde **💬 Confirmar por WhatsApp** a todo el ancho.
+
+Detalles:
+
+- La fecha no admite días pasados; las horas salen del horario del negocio,
+  descuentan las ya ocupadas (`busy_slots`) y, si es hoy, las que ya pasaron.
+  Si el día está cerrado o no quedan huecos, se avisa en el propio formulario.
+- Al confirmar se crea la cita (`appointment_at`) y se abre WhatsApp con el
+  mensaje estructurado. Ya no hay que pasar por el carrito.
+- Si el servicio tiene requisitos escritos en el panel, se muestran bajo el
+  desplegable.
+- El servicio se preselecciona cuando se abre desde la tarjeta de ese servicio.
+
+## Caché
+
+`CACHE_VERSION` → `cw-v22`; `i18n.js` 18, `catalog.js` 17, `catalog.css` 10.
+
+## Verificación
+
+216 comprobaciones: 144 jsdom de catálogo/panel/home, 24 de datos y 48 sobre
+PostgreSQL 16 real.
