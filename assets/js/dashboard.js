@@ -40,7 +40,7 @@
 
   var state = {
     session: null, biz: null, isAdmin: false,
-    cats: [], products: [], orders: [], library: [], portfolio: [],
+    cats: [], products: [], orders: [], library: [], portfolio: [], team: [],
     route: 'home', sub: null
   };
 
@@ -57,10 +57,12 @@
       CW.store.listLibrary(id),
       // Si la tabla del porfolio todavía no existe, el panel debe seguir
       // funcionando (solo se queda sin porfolio).
-      CW.store.listPortfolio(id).catch(function () { return []; })
+      CW.store.listPortfolio(id).catch(function () { return []; }),
+      CW.store.listProfessionals(id).catch(function () { return []; })
     ]).then(function (r) {
       state.cats = r[0]; state.products = r[1]; state.orders = r[2]; state.library = r[3];
       state.portfolio = r[4] || [];
+      state.team = r[5] || [];
     });
   }
 
@@ -133,7 +135,7 @@
   // ---------------------------------------------------------------------
   // Router
   // ---------------------------------------------------------------------
-  var ROUTES = ['home', 'orders', 'contacts', 'agenda', 'sales', 'products', 'services', 'categories', 'portfolio', 'library', 'settings', 'plan', 'account', 'admin'];
+  var ROUTES = ['home', 'orders', 'contacts', 'agenda', 'sales', 'products', 'services', 'categories', 'portfolio', 'team', 'library', 'settings', 'plan', 'account', 'admin'];
 
   function route() {
     var h = location.hash.replace(/^#/, '') || 'home';
@@ -147,7 +149,7 @@
     var view = $('[data-view]');
     var fn = ({
       home: renderHome, orders: renderOrders, contacts: renderContacts, agenda: renderAgenda, sales: renderSales,
-      products: renderProducts, services: renderServices, categories: renderCategories, portfolio: renderPortfolio, library: renderLibrary,
+      products: renderProducts, services: renderServices, categories: renderCategories, portfolio: renderPortfolio, team: renderTeam, library: renderLibrary,
       settings: renderSettings, plan: renderPlan, account: renderAccount, admin: renderAdmin
     })[state.route];
     if (state.route === 'admin' && !state.isAdmin) {
@@ -617,7 +619,7 @@
       '<div class="form-grid">' +
         '<div class="form-main">' +
           card(t('prod.data'), t('prod.data.desc'),
-            field(t('prod.name'), '<input data-f="name" value="' + esc(p.name) + '" placeholder="Ej. Arroz extra 5 kg">') +
+            field(t('prod.name'), '<input data-f="name" value="' + esc(p.name) + '" placeholder="Ej. Chaise en bois">') +
             field(t('prod.url'), '<input data-f="slug" value="' + esc(p.slug) + '" placeholder="arroz-extra-5-kg">') +
             (onServices ? '' : field(t('prod.type'), '<div class="segmented" data-kind>' +
               '<button type="button" data-k="product" class="' + (p.kind !== 'service' ? 'active' : '') + '">📦 ' + t('prod.type.product') + '</button>' +
@@ -634,8 +636,8 @@
             '</div>') +
           '<div data-service-fields' + (p.kind === 'service' ? '' : ' hidden') + '>' +
             card(t('prod.type.service'), '', '<div class="two-col-inline">' +
-              field(t('prod.duration'), '<input data-f="duration" value="' + esc(p.duration || '') + '" placeholder="Ej. 2 horas">') +
-              field(t('prod.modality'), '<input data-f="modality" value="' + esc(p.modality || '') + '" placeholder="Ej. A domicilio / En el local / Online">') +
+              field(t('prod.duration'), '<input data-f="duration" value="' + esc(p.duration || '') + '" placeholder="Ej. 1 h 30">') +
+              field(t('prod.modality'), '<input data-f="modality" value="' + esc(p.modality || '') + '" placeholder="Ej. À domicile / En boutique / En ligne">') +
               '</div>' +
               '<label class="check"><input type="checkbox" data-f="bookable"' + (p.bookable ? ' checked' : '') + '> ' + t('prod.bookable') + '</label>' +
               field(t('sv.requirements'), '<textarea data-f="requirements" rows="3" maxlength="400">' + esc(p.requirements || '') + '</textarea><small class="muted">' + t('sv.requirements.hint') + '</small>')) +
@@ -911,7 +913,7 @@
     view.innerHTML = '<div class="view-head"><div><span class="crumb-mini">' + t('nav.categories') + ' / ' + (editing ? t('common.edit') : t('cat.new')) + '</span><h1>' + (editing ? t('common.edit') : t('cat.new')) + '</h1><p class="muted">' + t('cat.sub') + '</p></div>' +
       '<button class="btn ghost" data-back>← ' + t('common.back') + '</button></div>' +
       card(t('cat.data'), '', 
-        field(t('common.name'), '<input data-f="name" value="' + esc(c.name) + '" placeholder="Ej. Abarrotes">') +
+        field(t('common.name'), '<input data-f="name" value="' + esc(c.name) + '" placeholder="Ej. Mobilier">') +
         field(t('cat.slug'), '<input data-f="slug" value="' + esc(c.slug) + '" placeholder="abarrotes">') +
         field(t('prod.type'), '<div class="segmented" data-kind>' +
           '<button type="button" data-k="product" class="' + (c.kind !== 'service' ? 'active' : '') + '">📦 ' + t('prod.type.product') + '</button>' +
@@ -1104,14 +1106,19 @@
       '<h1>' + (editing ? t('port.edit') : t('port.new')) + '</h1></div>' +
       '<button class="btn ghost" data-back>← ' + t('common.back') + '</button></div>' +
       card(t('port.item'), '',
-        field(t('common.name'), '<input data-f="title" maxlength="120" value="' + esc(it.title) + '" placeholder="Ej. Encimera de mármol en cocina">') +
+        field(t('common.name'), '<input data-f="title" maxlength="120" value="' + esc(it.title) + '" placeholder="Ej. Meuble TV sur mesure">') +
         field(t('port.desc'), '<textarea data-f="description" rows="3" maxlength="220">' + esc(it.description || '') + '</textarea><small class="muted">' + t('port.desc.hint') + '</small>') +
-        field(t('port.details'), '<textarea data-f="details" rows="4" placeholder="Material: mármol blanco&#10;Medidas: 3,2 m&#10;Acabado: pulido">' + esc(it.details || '') + '</textarea><small class="muted">' + t('port.details.hint') + '</small>') +
+        field(t('port.details'), '<textarea data-f="details" rows="4" placeholder="Matériaux : chêne massif&#10;Dimensions : 2,4 m&#10;Finition : vernis mat">' + esc(it.details || '') + '</textarea><small class="muted">' + t('port.details.hint') + '</small>') +
         '<div class="two-col-inline">' +
           field(t('port.client'), '<input data-f="client" value="' + esc(it.client || '') + '">') +
           field(t('port.date'), '<input data-f="work_date" placeholder="2025" value="' + esc(it.work_date || '') + '">') +
         '</div>' +
-        field(t('port.place'), '<input data-f="place" value="' + esc(it.place || '') + '">')
+        field(t('port.place'), '<input data-f="place" value="' + esc(it.place || '') + '">') +
+        '<div class="two-col-inline">' +
+          field(t('port.category'), '<input data-f="category" placeholder="Ej. Menuiserie" value="' + esc(it.category || '') + '">') +
+          field(t('port.price'), '<input type="number" step="0.01" data-f="price" value="' + (it.price || '') + '">') +
+        '</div>' +
+        field(t('port.link'), '<input type="url" data-f="link" placeholder="https://…" value="' + esc(it.link || '') + '">')
       ) +
       trCard(it, [
         { key: 'title', label: t('common.name') },
@@ -1126,14 +1133,12 @@
       '<div class="form-sticky"><button class="btn ghost" data-back2>' + t('common.cancel') + '</button>' +
       '<button class="btn primary" data-save>✓ ' + t('port.save') + '</button></div>';
 
-    bindTrAi(view, [
-      { key: 'title', from: '[data-f="title"]' },
-      { key: 'description', from: '[data-f="description"]' },
-      { key: 'details', from: '[data-f="details"]' }
-    ]);
-    $('[data-back]', view).addEventListener('click', function () { location.hash = '#portfolio'; });
-    $('[data-back2]', view).addEventListener('click', function () { location.hash = '#portfolio'; });
-    $('[data-item-img]', view).addEventListener('click', function () {
+    function back() { location.hash = '#portfolio'; }
+    var b1 = $('[data-back]', view); if (b1) b1.addEventListener('click', back);
+    var b2 = $('[data-back2]', view); if (b2) b2.addEventListener('click', back);
+
+    var imgSlot = $('[data-item-img]', view);
+    if (imgSlot) imgSlot.addEventListener('click', function () {
       openImagePicker(1, function (urls) {
         if (!urls[0]) return;
         view._img = urls[0];
@@ -1142,6 +1147,14 @@
         slot.classList.add('filled');
       });
     });
+    try {
+      bindTrAi(view, [
+        { key: 'title', from: '[data-f="title"]' },
+        { key: 'description', from: '[data-f="description"]' },
+        { key: 'details', from: '[data-f="details"]' }
+      ]);
+    } catch (e) { console.warn('[CW] Traducción no disponible en el porfolio:', e); }
+
     $('[data-save]', view).addEventListener('click', function () {
       function val(f) { var el = $('[data-f="' + f + '"]', view); return el ? el.value : ''; }
       var title = val('title').trim();
@@ -1152,6 +1165,9 @@
         title: title,
         description: val('description').trim().slice(0, 220),
         image_url: view._img || it.image_url || '',
+        category: val('category').trim(),
+        price: val('price') === '' ? null : Number(val('price')),
+        link: val('link').trim(),
         details: val('details').trim(),
         client: val('client').trim(),
         place: val('place').trim(),
@@ -1169,6 +1185,104 @@
       }).catch(function (err) {
         btns.forEach(function (b) { b.disabled = false; });
         console.warn('[CW] No se pudo guardar el trabajo del porfolio:', err);
+        CW.toast(t('set.save.error'), 'error');
+      });
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // EQUIPO (profesionales con su propio horario)
+  // ---------------------------------------------------------------------
+  var DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+  function renderTeam(view) {
+    if (state.sub === 'new' || state.sub === 'edit') return renderTeamForm(view);
+    view.innerHTML = '<div class="view-head"><div><h1>' + t('team.title') + '</h1><p class="muted">' + t('team.sub') + '</p></div>' +
+      '<button class="btn primary" data-new>+ ' + t('team.new') + '</button></div>' +
+      (state.team.length
+        ? '<section class="card"><ul class="pf-sort">' + state.team.map(function (m) {
+            var days = (m.work_days || [1,2,3,4,5,6]).slice().sort().map(function (d) { return DAYS[d]; }).join(' ');
+            return '<li class="pf-sort-item"><div class="row-thumb ph">👤</div>' +
+              '<div class="pf-sort-main"><b>' + esc(m.name) + (m.role ? ' · <span class="muted">' + esc(m.role) + '</span>' : '') + '</b>' +
+              '<small class="muted">' + esc(days) + ' · ' + esc(m.open_time || '09:00') + '–' + esc(m.close_time || '18:00') + '</small></div>' +
+              '<button class="switch' + (m.active !== false ? ' on' : '') + '" data-team-toggle="' + m.id + '"></button>' +
+              '<div class="pf-sort-actions"><button class="btn ghost small" data-edit="' + m.id + '">' + t('common.edit') + '</button>' +
+              '<button class="btn ghost small danger" data-del="' + m.id + '">' + t('common.delete') + '</button></div></li>';
+          }).join('') + '</ul></section>'
+        : '<div class="card empty-state"><div class="es-icon">👤</div><b>' + t('team.none') + '</b><p>' + t('team.none.desc') + '</p></div>');
+
+    $$('[data-new]', view).forEach(function (b) { b.addEventListener('click', function () { location.hash = '#team/new'; }); });
+    $$('[data-edit]', view).forEach(function (b) { b.addEventListener('click', function () { location.hash = '#team/edit/' + b.dataset.edit; }); });
+    $$('[data-team-toggle]', view).forEach(function (b) {
+      b.addEventListener('click', function () {
+        var m = state.team.find(function (x) { return x.id === b.dataset.teamToggle; });
+        var next = !(m.active !== false);
+        CW.store.saveProfessional({ id: m.id, active: next }).then(function () { m.active = next; b.classList.toggle('on', next); });
+      });
+    });
+    $$('[data-del]', view).forEach(function (b) {
+      b.addEventListener('click', function () {
+        CW.confirm(t('team.confirm.delete'), function () {
+          CW.store.deleteProfessional(b.dataset.del).then(function () { loadAll().then(route); });
+        }, true);
+      });
+    });
+  }
+
+  function renderTeamForm(view) {
+    var editing = state.sub === 'edit' ? state.team.find(function (x) { return x.id === state.param; }) : null;
+    var m = editing || { name: '', role: '', active: true, work_days: [1,2,3,4,5,6], open_time: '09:00', close_time: '18:00', slot_minutes: 30 };
+    var days = (m.work_days || []).slice();
+
+    view.innerHTML = '<div class="view-head"><div><span class="crumb-mini">' + t('team.title') + ' / ' + (editing ? t('common.edit') : t('team.new')) + '</span>' +
+      '<h1>' + (editing ? t('common.edit') : t('team.new')) + '</h1></div>' +
+      '<button class="btn ghost" data-back>← ' + t('common.back') + '</button></div>' +
+      card(t('team.data'), '',
+        field(t('common.name'), '<input data-f="name" value="' + esc(m.name) + '" placeholder="Ej. Youssef">') +
+        field(t('team.role'), '<input data-f="role" value="' + esc(m.role || '') + '" placeholder="Ej. Peluquero">') +
+        field(t('team.days'), '<div class="days-row" data-days>' + DAYS.map(function (d, i) {
+          return '<button type="button" class="day' + (days.indexOf(i) >= 0 ? ' on' : '') + '" data-day="' + i + '">' + d + '</button>';
+        }).join('') + '</div>') +
+        '<div class="two-col-inline">' +
+          field(t('team.from'), '<input type="time" data-f="open_time" value="' + esc(m.open_time || '09:00') + '">') +
+          field(t('team.to'), '<input type="time" data-f="close_time" value="' + esc(m.close_time || '18:00') + '">') +
+        '</div>' +
+        '<div class="two-col-inline">' +
+          field(t('team.slot'), '<input type="number" data-f="slot_minutes" value="' + (m.slot_minutes || 30) + '">') +
+          '<label class="check" style="align-self:end"><input type="checkbox" data-f="active"' + (m.active !== false ? ' checked' : '') + '> ' + t('common.active') + '</label>' +
+        '</div>') +
+      '<div class="form-sticky"><button class="btn ghost" data-back2>' + t('common.cancel') + '</button>' +
+      '<button class="btn primary" data-save>✓ ' + t('common.save') + '</button></div>';
+
+    $$('[data-day]', view).forEach(function (b) {
+      b.addEventListener('click', function () {
+        var d = Number(b.dataset.day), i = days.indexOf(d);
+        if (i >= 0) { days.splice(i, 1); b.classList.remove('on'); }
+        else { days.push(d); b.classList.add('on'); }
+      });
+    });
+    $('[data-back]', view).addEventListener('click', function () { location.hash = '#team'; });
+    $('[data-back2]', view).addEventListener('click', function () { location.hash = '#team'; });
+    $('[data-save]', view).addEventListener('click', function () {
+      function val(f) { var el = $('[data-f="' + f + '"]', view); return el ? el.value : ''; }
+      if (!val('name').trim()) { CW.toast(t('common.required'), 'error'); return; }
+      var obj = {
+        id: editing ? editing.id : undefined,
+        business_id: state.biz.id,
+        name: val('name').trim(),
+        role: val('role').trim(),
+        work_days: days.sort(),
+        open_time: val('open_time') || '09:00',
+        close_time: val('close_time') || '18:00',
+        slot_minutes: Number(val('slot_minutes') || 30),
+        active: $('[data-f="active"]', view).checked
+      };
+      CW.store.saveProfessional(obj).then(function () {
+        CW.toast(t('common.save'), 'ok');
+        location.hash = '#team';
+        loadAll().then(route);
+      }).catch(function (err) {
+        console.warn('[CW] No se pudo guardar el profesional:', err);
         CW.toast(t('set.save.error'), 'error');
       });
     });

@@ -109,12 +109,27 @@ create table if not exists public.products (
 create index if not exists products_business_idx on public.products (business_id, sort_order);
 create index if not exists products_category_idx on public.products (category_id);
 
+create table if not exists public.professionals (
+  id           uuid primary key default gen_random_uuid(),
+  business_id  uuid not null references public.businesses(id) on delete cascade,
+  name         text not null,
+  role         text,
+  active       boolean not null default true,
+  work_days    jsonb not null default '[1,2,3,4,5,6]'::jsonb,
+  open_time    text not null default '09:00',
+  close_time   text not null default '18:00',
+  slot_minutes integer not null default 30,
+  created_at   timestamptz not null default now()
+);
+create index if not exists professionals_business_idx on public.professionals (business_id);
+
 create table if not exists public.orders (
   id               uuid primary key default gen_random_uuid(),
   business_id      uuid not null references public.businesses(id) on delete cascade,
   code             text,
   customer_name    text not null default '',
   customer_phone   text not null default '',
+  customer_email   text,
   customer_address text not null default '',
   customer_city    text not null default '',
   note             text not null default '',
@@ -123,6 +138,8 @@ create table if not exists public.orders (
   fee              numeric(12,2) not null default 0,
   total            numeric(12,2) not null default 0,
   appointment_at   timestamptz,
+  professional_id  uuid references public.professionals(id) on delete set null,
+  professional_name text,
   status           text not null default 'new',
   created_at       timestamptz not null default now()
 );
@@ -148,6 +165,9 @@ create table if not exists public.portfolio (
   client      text,
   place       text,
   work_date   text,
+  category    text,
+  price       numeric(12,2),
+  link        text,
   sort_order  integer not null default 0,
   active      boolean not null default true,
   i18n        jsonb not null default '{}'::jsonb,
@@ -269,7 +289,7 @@ $$;
 
 -- Horas ya ocupadas de un día: el catálogo público puede consultar la
 -- disponibilidad sin permiso de lectura sobre `orders` (devuelve solo horas).
-create or replace function public.busy_slots(bid uuid, day date)
+create or replace function public.busy_slots(bid uuid, day date, pro uuid default null)
 returns setof text
 language sql
 security definer
@@ -281,7 +301,8 @@ as $$
   where o.business_id = bid
     and o.appointment_at is not null
     and (o.appointment_at at time zone 'UTC')::date = day
-    and coalesce(o.status, 'new') <> 'cancelled';
+    and coalesce(o.status, 'new') <> 'cancelled'
+    and ((pro is null and o.professional_id is null) or o.professional_id = pro);
 $$;
 
 -- Añadir/quitar super administradores desde el panel.
@@ -388,6 +409,7 @@ create trigger on_auth_user_created_link_member
 -- 4. RLS Y POLÍTICAS
 -- ============================================================================
 
+alter table public.professionals    enable row level security;
 alter table public.businesses       enable row level security;
 alter table public.categories       enable row level security;
 alter table public.products         enable row level security;
@@ -424,7 +446,7 @@ do $$
 declare
   t text;
 begin
-  foreach t in array array['categories', 'products', 'library', 'portfolio'] loop
+  foreach t in array array['categories', 'products', 'library', 'portfolio', 'professionals'] loop
     execute format('drop policy if exists %I on public.%I', t || '_public_read', t);
     execute format('create policy %I on public.%I for select using (true)', t || '_public_read', t);
 
@@ -508,7 +530,7 @@ create policy "audit_admin_insert" on public.admin_audit
 grant usage on schema public to anon, authenticated;
 
 grant select on public.businesses, public.categories, public.products,
-                public.library, public.portfolio, public.site_settings
+                public.library, public.portfolio, public.professionals, public.site_settings
   to anon, authenticated;
 
 grant select on public.orders to authenticated;
@@ -517,8 +539,9 @@ grant insert on public.orders to anon, authenticated;
 grant select on public.admins, public.business_members, public.admin_audit to authenticated;
 
 grant insert, update, delete on public.businesses, public.categories, public.products,
-                                 public.library, public.portfolio, public.site_settings,
-                                 public.admins, public.business_members, public.admin_audit
+                                 public.library, public.portfolio, public.professionals,
+                                 public.site_settings, public.admins, public.business_members,
+                                 public.admin_audit
   to authenticated;
 
 -- ============================================================================

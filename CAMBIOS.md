@@ -614,3 +614,47 @@ Detalles:
 
 216 comprobaciones: 144 jsdom de catálogo/panel/home, 24 de datos y 48 sobre
 PostgreSQL 16 real.
+
+---
+
+# v25 · Home rediseñada (editorial)
+
+Diseño nuevo, sin reutilizar el anterior: pasa de landing de tarjetas a
+**página editorial** con jerarquía propia.
+
+## Estructura
+
+1. **Bandeau noir** con la promesa (sans commission, 3 langues, catalogue et
+   réservations) y el teléfono.
+2. **Affiche sombre** a dos columnas: titular en serif de gran tamaño, y a la
+   derecha una composición con el móvil, una tarjeta de calendario flotante y
+   un aviso de WhatsApp. Fondo oscuro con halo morado.
+3. **Bandeau de métiers** (Boutique · Coiffure · Plomberie · Menuiserie…) como
+   franja tipográfica.
+4. **Cuatro bloques alternados** (zig-zag 01–04), uno por cada cosa que
+   ofrecemos, cada uno con una maqueta hecha en CSS:
+   - 01 Catalogue (produits et services) — chips + dos fichas.
+   - 02 Réservations avec calendrier — mini calendario con días ocupados y horas.
+   - 03 Portfolio — dos fichas de trabajo.
+   - 04 Commandes WhatsApp — conversación con el pedido ya formado.
+5. **Banda negra** con los tres pasos.
+6. **Métiers** en pastillas (con sus pop-ups).
+7. **Cierre** y pie de cuatro columnas.
+
+## Detalles
+
+- **Francés principal**: sigue abriendo en francés si el visitante no ha elegido
+  idioma; el selector traduce todo.
+- Tipografía: titulares en **serif** (Georgia) frente al sans del catálogo, para
+  que la home no se confunda con el panel.
+- Se mantienen las políticas en pop-up, las imágenes configurables desde
+  Administración (`data-home-img="hero"`), la PWA y los enlaces de acceso.
+
+## Caché
+
+`CACHE_VERSION` → `cw-v24`; `home.css` 2, `i18n.js` 20.
+
+## Verificación
+
+170 comprobaciones: 146 jsdom (incluye la nueva estructura de la home), 24 de
+panel y 48 sobre PostgreSQL 16 real.

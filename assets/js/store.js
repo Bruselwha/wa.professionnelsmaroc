@@ -126,6 +126,7 @@
     if (!LS.read('orders')) LS.write('orders', []);
     if (!LS.read('library')) LS.write('library', []);
     if (!LS.read('portfolio')) LS.write('portfolio', []);
+    if (!LS.read('professionals')) LS.write('professionals', []);
     if (!LS.read('admins')) LS.write('admins', []);
     if (!LS.read('members')) LS.write('members', []);
     if (!LS.read('audit')) LS.write('audit', []);
@@ -379,6 +380,40 @@
       return sb.from('categories').delete().eq('id', id).then(function (r) { if (r.error) throw r.error; });
     },
 
+    // ---- Profesionales / empleados --------------------------------------
+    listProfessionals: function (businessId, opts) {
+      opts = opts || {};
+      if (CW.isDemo) {
+        return Promise.resolve(LS.read('professionals', []).filter(function (p) {
+          return p.business_id === businessId && (!opts.activeOnly || p.active !== false);
+        }));
+      }
+      var sel = sb.from('professionals').select('*').eq('business_id', businessId);
+      if (opts.activeOnly) sel = sel.eq('active', true);
+      return sel.order('created_at', { ascending: true }).then(function (r) {
+        if (r.error) throw r.error; return r.data || [];
+      }).catch(function () { return []; });
+    },
+
+    saveProfessional: function (item) {
+      if (CW.isDemo) {
+        var arr = LS.read('professionals', []);
+        if (item.id) arr = arr.map(function (x) { return x.id === item.id ? Object.assign({}, x, item) : x; });
+        else { item.id = uid(); item.created_at = nowIso(); arr.push(item); }
+        LS.write('professionals', arr);
+        return Promise.resolve(item);
+      }
+      var payload = Object.assign({}, item);
+      delete payload.id;
+      if (item.id) return updateRow('professionals', item.id, payload);
+      return insertRow('professionals', payload);
+    },
+
+    deleteProfessional: function (id) {
+      if (CW.isDemo) { LS.write('professionals', LS.read('professionals', []).filter(function (x) { return x.id !== id; })); return Promise.resolve(); }
+      return sb.from('professionals').delete().eq('id', id).then(function (r) { if (r.error) throw r.error; });
+    },
+
     // ---- Porfolio -------------------------------------------------------
     listPortfolio: function (businessId, opts) {
       opts = opts || {};
@@ -495,11 +530,13 @@
     // Horas ya ocupadas de un día (solo horas, nunca datos del cliente).
     // La función SQL es SECURITY DEFINER para que el catálogo público pueda
     // consultar la disponibilidad sin permiso de lectura sobre `orders`.
-    busySlots: function (businessId, day) {
+    busySlots: function (businessId, day, professionalId) {
       if (!day) return Promise.resolve([]);
       if (CW.isDemo) {
         return Promise.resolve((LS.read('orders', []) || []).filter(function (o) {
-          return o.business_id === businessId && o.appointment_at;
+          if (!(o.business_id === businessId && o.appointment_at)) return false;
+          if (professionalId === undefined) return true;
+          return (o.professional_id || null) === (professionalId || null);
         }).map(function (o) {
           var d = new Date(o.appointment_at);
           if (isNaN(d)) return null;
@@ -507,7 +544,7 @@
           return ymd === day ? ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) : null;
         }).filter(Boolean));
       }
-      return sb.rpc('busy_slots', { bid: businessId, day: day }).then(function (r) {
+      return sb.rpc('busy_slots', { bid: businessId, day: day, pro: professionalId || null }).then(function (r) {
         if (r.error) throw r.error;
         return (r.data || []).map(function (x) { return typeof x === 'string' ? x : x.slot; });
       }).catch(function () { return []; });

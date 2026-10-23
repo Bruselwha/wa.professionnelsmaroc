@@ -16,3 +16,7 @@ alter table public.portfolio add column if not exists work_date text;
 -- Comprobación rápida (opcional):
 -- select column_name from information_schema.columns
 --  where table_schema='public' and table_name='portfolio' order by ordinal_position;
+
+alter table public.portfolio add column if not exists category text;
+alter table public.portfolio add column if not exists price numeric(12,2);
+alter table public.portfolio add column if not exists link text;

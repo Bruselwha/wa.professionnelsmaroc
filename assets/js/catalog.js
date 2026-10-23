@@ -348,7 +348,13 @@
         $('[data-dg-main]', m.modal).innerHTML = imgs[i] ? '<img src="' + esc(imgs[i]) + '">' : '<div class="ph-img big">🖼️</div>';
       });
     });
-    $('[data-d-add]', m.modal).addEventListener('click', function () { addToCart(p.id); m.close(); openCart(); });
+    // Mismo formulario de reserva que el botón de la tarjeta: un solo flujo.
+    $('[data-d-add]', m.modal).addEventListener('click', function () {
+      m.close();
+      if (p.kind === 'service' && p.bookable) return openBooking(p.id);
+      addToCart(p.id);
+      openCart();
+    });
     $('[data-d-share]', m.modal).addEventListener('click', function () {
       CW.api.shareWhatsApp(CW.api.shareItem(S.biz, Object.assign({}, p, { name: CW.tx(p, 'name'), description: CW.tx(p, 'description'), category_name: c ? CW.tx(c, 'name') : '' })));
     });
@@ -376,6 +382,12 @@
   // Formulario de reserva con la lógica de disponibilidad del negocio:
   // días cerrados, horas ya ocupadas y citas de hoy ya pasadas.
   function openBooking(id) {
+    CW.store.listProfessionals(S.biz.id, { activeOnly: true }).then(function (pros) {
+      buildBooking(id, pros || []);
+    }).catch(function () { buildBooking(id, []); });
+  }
+
+  function buildBooking(id, pros) {
     var services = bookingServices();
     var pre = id ? services.find(function (x) { return x.id === id; }) : null;
     BK.service = pre || (services.length === 1 ? services[0] : null);
@@ -384,7 +396,7 @@
       className: 'bk-modal',
       title: '📅 ' + t('bk.title'),
       html:
-        '<div class="bk-field"><label class="bk-label"><span class="bk-num">1</span>' + t('bk.service') + '</label>' +
+        '<div class="bk-field"><label class="bk-label"><span class="bk-num"></span>' + t('bk.service') + '</label>' +
           '<select data-bk-service>' +
             '<option value="">' + t('bk.selectService') + '</option>' +
             services.map(function (p) {
@@ -393,21 +405,27 @@
             }).join('') +
           '</select>' +
         '</div>' +
+        (pros.length ? '<div class="bk-field"><label class="bk-label"><span class="bk-num"></span>' + t('bk.pro') + '</label>' +
+          '<select data-bk-pro><option value="">' + t('bk.choosePro') + '</option>' +
+            pros.map(function (m) { return '<option value="' + m.id + '">' + esc(m.name) + (m.role ? ' · ' + esc(m.role) : '') + '</option>'; }).join('') +
+          '</select></div>' : '') +
         '<p class="bk-req" data-bk-req hidden></p>' +
         '<div class="bk-two">' +
-          '<div class="bk-field"><label class="bk-label"><span class="bk-num">2</span>' + t('bk.date') + '</label>' +
+          '<div class="bk-field"><label class="bk-label"><span class="bk-num"></span>' + t('bk.date') + '</label>' +
             '<input type="date" data-bk-date min="' + bkToday() + '" value="' + bkToday() + '"></div>' +
-          '<div class="bk-field"><label class="bk-label"><span class="bk-num">3</span>' + t('bk.hour') + '</label>' +
+          '<div class="bk-field"><label class="bk-label"><span class="bk-num"></span>' + t('bk.hour') + '</label>' +
             '<select data-bk-hour><option value="">' + t('bk.chooseHour') + '</option></select></div>' +
         '</div>' +
         '<p class="bk-hint" data-bk-hint hidden></p>' +
-        '<div class="bk-field"><label class="bk-label"><span class="bk-num">4</span>' + t('bk.yourName') + '</label>' +
+        '<div class="bk-field"><label class="bk-label"><span class="bk-num"></span>' + t('bk.yourName') + '</label>' +
           '<input data-bk-name autocomplete="name" placeholder="' + t('bk.namePh') + '"></div>' +
-        '<div class="bk-field"><label class="bk-label"><span class="bk-num">5</span>WhatsApp</label>' +
+        '<div class="bk-field"><label class="bk-label"><span class="bk-num"></span>WhatsApp</label>' +
           '<input data-bk-phone inputmode="tel" autocomplete="tel" placeholder="600123456"></div>' +
-        '<div class="bk-field" data-bk-addr-wrap><label class="bk-label"><span class="bk-num">6</span>' + t('bk.address') + '</label>' +
+        '<div class="bk-field" data-bk-addr-wrap><label class="bk-label"><span class="bk-num"></span>' + t('bk.address') + '</label>' +
           '<input data-bk-address placeholder="' + t('bk.addressPh') + '"></div>' +
-        '<div class="bk-field"><label class="bk-label"><span class="bk-num">7</span>' + t('bk.notes') + ' <span class="muted">(' + t('common.optional') + ')</span></label>' +
+        '<div class="bk-field"><label class="bk-label">📧 ' + t('bk.email') + ' <span class="muted">(' + t('common.optional') + ')</span></label>' +
+          '<input type="email" data-bk-email autocomplete="email" placeholder="tu@correo.com"></div>' +
+        '<div class="bk-field"><label class="bk-label"><span class="bk-num"></span>' + t('bk.notes') + ' <span class="muted">(' + t('common.optional') + ')</span></label>' +
           '<textarea data-bk-notes rows="2" placeholder="' + t('bk.notesPh') + '"></textarea></div>' +
         '<button type="button" class="bk-submit" data-bk-confirm>💬 ' + t('bk.confirmWa') + '</button>',
       footer: ''
@@ -417,6 +435,22 @@
     var serviceSel = $('[data-bk-service]', m.modal);
     var dateEl = $('[data-bk-date]', m.modal);
     var hourEl = $('[data-bk-hour]', m.modal);
+    var proSel = $('[data-bk-pro]', m.modal);
+
+    function currentPro() {
+      return proSel ? pros.find(function (x) { return x.id === proSel.value; }) : null;
+    }
+    // Horario: el del profesional si se ha elegido; si no, el del negocio.
+    function schedule() {
+      var pro = currentPro();
+      if (!pro) return S.biz;
+      return {
+        work_days: pro.work_days && pro.work_days.length ? pro.work_days : (S.biz.work_days || [1,2,3,4,5,6]),
+        open_time: pro.open_time || S.biz.open_time,
+        close_time: pro.close_time || S.biz.close_time,
+        slot_minutes: pro.slot_minutes || S.biz.slot_minutes
+      };
+    }
 
     function needAddress(p) {
       return /domicilio|domicile|home|à domicile/i.test(String(p && p.modality || '')) ||
@@ -443,8 +477,9 @@
       var hint = $('[data-bk-hint]', m.modal);
       hint.hidden = true;
       if (!day) return;
-      CW.store.busySlots(S.biz.id, day).then(function (busy) {
-        var slots = CW.api.timeSlots(S.biz, day);
+      var pro = currentPro();
+      CW.store.busySlots(S.biz.id, day, pro ? pro.id : null).then(function (busy) {
+        var slots = CW.api.timeSlots(schedule(), day);
         if (day === bkToday()) {
           var now = new Date();
           slots = slots.filter(function (h) {
@@ -467,6 +502,7 @@
     }
 
     serviceSel.addEventListener('change', function () { syncAddress(); loadSlots(); });
+    if (proSel) proSel.addEventListener('change', loadSlots);
     dateEl.addEventListener('change', loadSlots);
     syncAddress();
     loadSlots();
@@ -474,47 +510,97 @@
     $('[data-bk-confirm]', m.modal).addEventListener('click', function () {
       var btn = $('[data-bk-confirm]', m.modal);
       var service = services.find(function (x) { return x.id === serviceSel.value; });
+      var pro = currentPro();
       var name = ($('[data-bk-name]', m.modal).value || '').trim();
       var phone = ($('[data-bk-phone]', m.modal).value || '').trim();
+      var email = ($('[data-bk-email]', m.modal).value || '').trim();
       var address = ($('[data-bk-address]', m.modal).value || '').trim();
       var notes = ($('[data-bk-notes]', m.modal).value || '').trim();
       var date = dateEl.value, hour = hourEl.value;
       var addrRequired = $('[data-bk-address]', m.modal).getAttribute('data-required') === '1';
 
-      if (!service || !date || !hour || !name || !phone || (addrRequired && !address)) {
-        CW.toast(t('bk.required'), 'error');
+      if (!service || !date || !hour || !name || !phone || (addrRequired && !address) || (pros.length && !pro)) {
+        CW.toast(pros.length && !pro ? t('bk.proRequired') : t('bk.required'), 'error');
         return;
       }
 
       btn.disabled = true;
+      var when = new Date(date + 'T' + hour + ':00');
       var order = {
         business_id: S.biz.id,
         code: CW.store.newOrderCode(),
-        customer_name: name, customer_phone: phone,
+        customer_name: name, customer_phone: phone, customer_email: email,
         customer_address: address, customer_city: '',
         note: notes,
         items: [{
           name: CW.tx(service, 'name'), qty: 1, price: eff(service), kind: 'service',
           duration: service.duration || '', modality: service.modality || '',
-          appointment: { date: date, time: hour, notes: notes, address: address }
+          appointment: { date: date, time: hour, notes: notes, address: address, professional: pro ? pro.name : '' }
         }],
         subtotal: eff(service), fee: 0, total: eff(service),
-        appointment_at: new Date(date + 'T' + hour + ':00').toISOString(),
+        appointment_at: when.toISOString(),
+        professional_id: pro ? pro.id : null,
+        professional_name: pro ? pro.name : '',
         status: 'new'
       };
-      var msg = CW.api.orderMessage(S.biz, order);
-      var save = (S.biz.id === 'demo' && CW.isDemo) ? Promise.resolve(order) : CW.store.createOrder(order);
 
+      var save = (S.biz.id === 'demo' && CW.isDemo) ? Promise.resolve(order) : CW.store.createOrder(order);
       save.then(function () {
-        if (S.biz.whatsapp) window.open(CW.api.waLink(S.biz.whatsapp, msg), '_blank');
         m.close();
-        CW.toast(t('bk.added'), 'ok');
+        showBookingDone(order, service, pro, when);
       }).catch(function (err) {
         btn.disabled = false;
         console.warn('[CW] No se pudo guardar la reserva:', err);
         CW.toast(t('bk.error'), 'error');
       });
     });
+  }
+
+  // Pantalla de confirmación: resumen + avisos al cliente y al negocio.
+  function showBookingDone(order, service, pro, when) {
+    var lang = (CW.i18n && CW.i18n.lang) || 'es';
+    var dateTxt = when.toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'long' });
+    var timeTxt = when.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+    var bizName = CW.tx(S.biz, 'name');
+    var svc = CW.tx(service, 'name');
+
+    var body =
+      '*CITA CONFIRMADA*\n' + bizName + '\n' +
+      'Código: *' + order.code + '*\n' +
+      'Servicio: ' + svc + '\n' +
+      (pro ? 'Profesional: ' + pro.name + '\n' : '') +
+      'Fecha: ' + dateTxt + '\n' +
+      'Hora: ' + timeTxt + '\n' +
+      (order.customer_address ? 'Dirección: ' + order.customer_address + '\n' : '');
+
+    var bizBody = body + '\nCliente: ' + order.customer_name + '\nTeléfono: ' + order.customer_phone + '\n' +
+      (order.note ? 'Notas: ' + order.note : '');
+
+    var cards = CW.modal({
+      className: 'bk-done',
+      title: '✅ ' + t('bk.confirm.title'),
+      html:
+        '<div class="bk-done-card">' +
+          '<div class="bk-done-row"><span>' + t('bk.service') + '</span><b>' + esc(svc) + '</b></div>' +
+          (pro ? '<div class="bk-done-row"><span>' + t('bk.pro') + '</span><b>' + esc(pro.name) + '</b></div>' : '') +
+          '<div class="bk-done-row"><span>' + t('bk.date') + '</span><b>' + esc(dateTxt) + '</b></div>' +
+          '<div class="bk-done-row"><span>' + t('bk.hour') + '</span><b>' + esc(timeTxt) + '</b></div>' +
+          (order.customer_address ? '<div class="bk-done-row"><span>' + t('bk.address') + '</span><b>' + esc(order.customer_address) + '</b></div>' : '') +
+          '<div class="bk-done-row"><span>' + t('common.phone') + '</span><b>' + esc(order.customer_phone) + '</b></div>' +
+        '</div>' +
+        '<p class="muted bk-done-hint">' + t('bk.confirm.desc') + '</p>' +
+        (S.biz.whatsapp ? '<a class="btn wa block" target="_blank" rel="noopener" href="' +
+          CW.api.waLink(S.biz.whatsapp, bizBody) + '">💬 ' + t('bk.confirm.business') + '</a>' : '') +
+        '<a class="btn soft block" target="_blank" rel="noopener" href="' +
+          CW.api.waLink(order.customer_phone, body) + '">💬 ' + t('bk.confirm.client') + '</a>' +
+        (order.customer_email ? '<a class="btn ghost block" href="mailto:' + esc(order.customer_email) +
+          '?subject=' + encodeURIComponent(t('bk.confirm.title') + ' · ' + svc) +
+          '&body=' + encodeURIComponent(body.replace(/\*/g, '')) + '">📧 ' + t('bk.confirm.mail') + '</a>' : '') +
+        '<button class="btn ghost block" data-close>' + t('common.close') + '</button>',
+      footer: ''
+    });
+    void cards;
+    CW.toast(t('bk.added'), 'ok');
   }
 
   // ---- Carrito --------------------------------------------------------
